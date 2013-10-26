@@ -41,7 +41,7 @@ public class Schedule extends Activity {
 	}
 	
 	// return # collisions if they collide
-	public int isScheduleCollidesCalendar() {		
+	public int isScheduleCollidesCalendar() {
 		int conflictCount = 0;
 		Cursor scheduleCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
 		
@@ -49,7 +49,7 @@ public class Schedule extends Activity {
 		if (scheduleCursor.moveToFirst()) {		
 			while(!scheduleCursor.isAfterLast()) {
 				String scheduleDate = scheduleCursor.getString(0);
-				String query = "SELECT * FROM " + DBI.tableCalendar + "WHERE Date=" + scheduleDate;
+				String query = "SELECT * FROM " + DBI.tableCalendar + "WHERE Date='" + scheduleDate + "'";
 				Cursor calendarCursor = DBI.select(query);
 				
 				// if exist at least one conflicts
@@ -115,32 +115,32 @@ public class Schedule extends Activity {
 		}
 		if(result) {
 			stats += "We suggest you re-schedule your exercise plan.";
+			
+			// generate dialog to ask user if re-computation is needed
+			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
+			// set title
+			alertDialogBuilder.setTitle("Warning");
+			// set dialog message and button events
+			alertDialogBuilder
+			.setMessage(stats)
+			.setCancelable(false)
+			.setPositiveButton("OK",new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog,int id) {
+					// if this button is clicked, close
+					computeSchedule();
+				}
+			})
+			.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog,int id) {
+					// if this button is clicked, just close
+					dialog.cancel();
+				}
+			});
+			// create alert dialog
+			AlertDialog alertDialog = alertDialogBuilder.create(); 
+			// show alert dialog
+			alertDialog.show();
 		}
-		
-		// generate dialog to ask user if re-computation is needed
-		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
-		// set title
-		alertDialogBuilder.setTitle("Warning");
-		// set dialog message and button events
-		alertDialogBuilder
-		.setMessage(stats)
-		.setCancelable(false)
-		.setPositiveButton("OK",new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog,int id) {
-				// if this button is clicked, close
-				computeSchedule();
-			}
-		})
-		.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog,int id) {
-				// if this button is clicked, just close
-				dialog.cancel();
-			}
-		});
-		// create alert dialog
-		AlertDialog alertDialog = alertDialogBuilder.create(); 
-		// show alert dialog
-		alertDialog.show();
 		
 		return result;
 	}
