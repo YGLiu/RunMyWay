@@ -1,0 +1,102 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".PersonalData" >
+
+    <EditText
+        android:id="@+id/editTextUserName"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/Name_Textview"
+        android:inputType="textPersonName" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupGender"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+
+        <RadioButton
+            android:id="@+id/radioMale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/Male_RadioButton" />
+
+        <RadioButton
+            android:id="@+id/radioFemale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/Female_RadioButton" />
+    </RadioGroup>
+
+    <EditText
+        android:id="@+id/editTextHeight"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/Height_Textview"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/editTextWeight"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/Weight_Textview"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/editTextBirthday"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="@string/Birthday_Textview"
+        android:inputType="date" >
+
+        <requestFocus />
+    </EditText>
+
+    <RadioGroup
+        android:id="@+id/radioGroupPurpose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <RadioButton
+            android:id="@+id/radioExercise"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/purpose_exercise" />
+
+        <RadioButton
+            android:id="@+id/radioLoseWeight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/purpose_lose_weight" />
+
+        <RadioButton
+            android:id="@+id/radioForFun"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/purpose_fun" />
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/buttonGoogleLogin"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:onClick="GoogleLogin"
+        android:text="@string/GoogleLogin" />
+
+    <Button
+        android:id="@+id/buttonSave"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:onClick="savePersonalDataInDB"
+        android:text="@string/Save_Button" />
+
+</LinearLayout>
