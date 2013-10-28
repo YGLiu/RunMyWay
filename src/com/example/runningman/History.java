@@ -155,11 +155,14 @@ public class History extends Activity {
 	}
 	private void CaloriesHistory()
 	{	try
-		{	GraphViewData[] GVD = new GraphViewData[size];
+		{	double weight = getUserWeight();
+			double calories;
+			GraphViewData[] GVD = new GraphViewData[size];
 			long time;
 			for(int i=0;i<size;i++)
-			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Start")).getTime();
-				GVD[i] = new GraphViewData(time,0);
+			{	calories = (weight*((historyData.get(i).getAsDouble("AveSpeed")*1000/60)*0.2+3.5)/3.5) * (historyData.get(i).getAsDouble("Duration")/60);
+				time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Start")).getTime();
+				GVD[i] = new GraphViewData(time,calories);
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);  
 			GraphView GV = new LineGraphView(this,"Calories Burnt");
@@ -186,5 +189,13 @@ public class History extends Activity {
 		}
 		catch(Exception e)
 		{	e.printStackTrace();}
+	}
+	private double getUserWeight()
+	{	Cursor cursor = DBI.select("SELECT * FROM " + DBI.tableUser);
+		cursor.moveToFirst();
+		if(cursor.getCount() == 0)
+			return 0;
+		else
+			return cursor.getDouble(3);
 	}
 }

@@ -491,7 +491,7 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 			if(sessionPrevPos != null)
 			{	float[] result = new float[3];
 				Location.distanceBetween(sessionPrevPos.latitude, sessionPrevPos.longitude, sessionCurrPos.latitude, sessionCurrPos.longitude, result);
-				sessionDistance += (result[0]/1000);
+				sessionDistance += result[0];
 			}
 		}
     }
@@ -532,7 +532,7 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 		String end = new SimpleDateFormat("HH:mm:ss",Locale.US).format(sessionEndTime);
 		String date = new SimpleDateFormat("yyyy-MM-dd",Locale.US).format(sessionStartTime);
 		double duration = (double)((double)(sessionEndTime.getTime() - sessionStartTime.getTime())/1000/60);
-		double AveSpeed = (sessionDistance)/(duration/60);
+		double AveSpeed = (sessionDistance/1000)/(duration/60);
 		ContentValues CV = new ContentValues();
 		CV.put("Date", date);
 		CV.put("Start", start);
