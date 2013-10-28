@@ -6,12 +6,10 @@ import android.view.Menu;
 import android.view.View;
 
 public class MainActivity extends Activity {
-	//private DBInterface DBI;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //DBI = new DBInterface(this);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -3,6 +3,7 @@ package com.example.runningman;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -62,13 +63,20 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 	private int stepCount = 0;
 	
 	
+	
 	// Variable needed for map and database
 	private GoogleMap map;
 	private Polyline route = null;
 	private ArrayList<LatLng> pos = new ArrayList<LatLng>();
 	private DBInterface DBI;
+	private int seqnum;
+	private Date sessionStartTime;
+	private Date sessionEndTime;
+	private double sessionDistance;
+	private LatLng sessionPrevPos;
+	private LatLng sessionCurrPos;
 	// End of variable needed for map and database
-	private int seqnum = 0;
+	
 	
 	SensorManager sm = null;
 	
@@ -330,6 +338,10 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 		        // you can implement below
 				DBI.delete(DBI.tableSession, null);
 				seqnum = 0;
+				sessionDistance = 0;
+				sessionPrevPos = null;
+				sessionCurrPos = null;
+				sessionStartTime = curDate;
 			}
 			
 			
@@ -399,7 +411,8 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 		        endView.setText("End time£º"+ str2); 
 		        
 		        //you can implement below
-		        
+		        sessionEndTime = curDate;
+		        onEnd();
 				
 			}
 			
@@ -472,6 +485,14 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 			DBI.insert(DBI.tableSession, CV);
 			seqnum++;
 			showRoute();
+			if(sessionCurrPos != null)
+				sessionPrevPos = sessionCurrPos;
+			sessionCurrPos = CL;
+			if(sessionPrevPos != null)
+			{	float[] result = new float[3];
+				Location.distanceBetween(sessionPrevPos.latitude, sessionPrevPos.longitude, sessionCurrPos.latitude, sessionCurrPos.longitude, result);
+				sessionDistance += result[0];
+			}
 		}
     }
 	@Override
@@ -506,7 +527,22 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 			cursor.moveToNext();
 		}
 	}
+	private void onEnd()
+	{	String start = new SimpleDateFormat("HH:mm:ss",Locale.US).format(sessionStartTime);
+		String end = new SimpleDateFormat("HH:mm:ss",Locale.US).format(sessionEndTime);
+		String date = new SimpleDateFormat("yyyy-MM-dd",Locale.US).format(sessionStartTime);
+		double duration = (double)((double)(sessionEndTime.getTime() - sessionStartTime.getTime())/1000/60);
+		double AveSpeed = (sessionDistance/1000)/(duration/60);
+		ContentValues CV = new ContentValues();
+		CV.put("Date", date);
+		CV.put("Start", start);
+		CV.put("End", end);
+		CV.put("Duration", duration);
+		CV.put("Distance", sessionDistance);
+		CV.put("AveSpeed", AveSpeed);
+		DBI.insert(DBI.tableHistory, CV);
+	}
 	
 	//End of functions for map
-    }
+}
 
