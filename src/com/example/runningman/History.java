@@ -93,12 +93,14 @@ public class History extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	private void DisplayHistory()
-	{	test();
+	{	//test();
 		readDatabase();
 		DistanceHistory();
 		DurationHistory();
 		CaloriesHistory();
 		AveSpeedHistory();
+		for(int i=0; i<historyData.size();i++)
+			System.out.println(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Duration")+historyData.get(i).getAsString("Distance")+historyData.get(i).getAsString("AveSpeed"));
 	}
 	private void readDatabase()
 	{	historyData.clear();
@@ -108,23 +110,13 @@ public class History extends Activity {
 		while(!cursor.isAfterLast())
 		{	ContentValues CV = new ContentValues();
 			CV.put("Date", cursor.getString(0));
-			CV.put("Duration", cursor.getString(3));
+			CV.put("Start", cursor.getString(1));
+			CV.put("End", cursor.getString(2));
+			CV.put("Duration", cursor.getDouble(3));
 			CV.put("Distance", cursor.getDouble(4));
 			CV.put("AveSpeed", cursor.getDouble(5));
 			historyData.add(CV);
 			cursor.moveToNext();
-		}
-	}
-	private void test()
-	{	for(int i=0;i<3;i++)
-		{	ContentValues CV = new ContentValues();
-			CV.put("Date", "2013-10-0" + i);
-			CV.put("Start", "start");
-			CV.put("End", "end");
-			CV.put("Duration", "abc");
-			CV.put("Distance", i);
-			CV.put("AveSpeed", 20);
-			DBI.insert(DBI.tableHistory, CV);
 		}
 	}
 	private void DistanceHistory()
@@ -132,7 +124,7 @@ public class History extends Activity {
 		{	GraphViewData[] GVD = new GraphViewData[size];
 			long time;
 			for(int i=0;i<size;i++)
-			{	time = new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(historyData.get(i).getAsString("Date")).getTime();
+			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Start")).getTime();
 				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("Distance"));
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);  
@@ -149,8 +141,8 @@ public class History extends Activity {
 		{	GraphViewData[] GVD = new GraphViewData[size];
 			long time;
 			for(int i=0;i<size;i++)
-			{	time = new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(historyData.get(i).getAsString("Date")).getTime();
-				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("Distance"));
+			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Start")).getTime();
+				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("Duration"));
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);  
 			GraphView GV = new LineGraphView(this,"Duration");
@@ -166,8 +158,8 @@ public class History extends Activity {
 		{	GraphViewData[] GVD = new GraphViewData[size];
 			long time;
 			for(int i=0;i<size;i++)
-			{	time = new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(historyData.get(i).getAsString("Date")).getTime();
-				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("Distance"));
+			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Start")).getTime();
+				GVD[i] = new GraphViewData(time,0);
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);  
 			GraphView GV = new LineGraphView(this,"Calories Burnt");
@@ -183,8 +175,8 @@ public class History extends Activity {
 		{	GraphViewData[] GVD = new GraphViewData[size];
 			long time;
 			for(int i=0;i<size;i++)
-			{	time = new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(historyData.get(i).getAsString("Date")).getTime();
-				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("Distance"));
+			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Start")).getTime();
+				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("AveSpeed"));
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);  
 			GraphView GV = new LineGraphView(this,"Average Speed");
