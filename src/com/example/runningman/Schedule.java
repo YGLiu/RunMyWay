@@ -41,20 +41,21 @@ public class Schedule extends Activity {
 	}
 	
 	// return # collisions if they collide
+	@SuppressLint("SimpleDateFormat")
 	public int isScheduleCollidesCalendar() {
 		int conflictCount = 0;
 		Cursor scheduleCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
 		
 		// if exist at least one event
-		if (scheduleCursor.moveToFirst()) {		
+		if (scheduleCursor.moveToFirst()) {	
 			while(!scheduleCursor.isAfterLast()) {
-				String scheduleDate = scheduleCursor.getString(0);
-				String query = "SELECT * FROM " + DBI.tableCalendar + "WHERE Date='" + scheduleDate + "'";
+				String scheduleDate = scheduleCursor.getString(0);				
+				// select events from calendar which have the same date
+				String query = "SELECT * FROM " + DBI.tableCalendar + " WHERE Date='" + scheduleDate + "'";			
 				Cursor calendarCursor = DBI.select(query);
 				
-				// if exist at least one conflicts
 				if (calendarCursor.moveToFirst()) {
-					while(!scheduleCursor.isAfterLast()) {
+					while(!calendarCursor.isAfterLast()) {
 						// conversion to Date type
 						String calStart = calendarCursor.getString(1);
 						String schStart = scheduleCursor.getString(1);
@@ -68,15 +69,20 @@ public class Schedule extends Activity {
 							Date schStartDate = parser.parse(schStart);
 							Date schEndDate = parser.parse(schEnd);
 							// if event slot has overlapping part
-							if (calStartDate.before(schEndDate) || calEndDate.after(schStartDate)) {
+							if ((calStartDate.before(schEndDate) && calStartDate.after(schStartDate)) ||
+									calStartDate.equals(schStartDate) || calStartDate.equals(schEndDate) ||
+									(calEndDate.before(schEndDate) && calEndDate.after(schStartDate)) ||
+									calEndDate.equals(schStartDate) || calEndDate.equals(schEndDate)) {
 								// increment count by 1
 								conflictCount ++;
 							}
 						} catch (ParseException e) {
 							e.printStackTrace();
 						}
+						calendarCursor.moveToNext();
 					}
-				}
+				}				
+				scheduleCursor.moveToNext();
 			}
 		}
 		return conflictCount;
@@ -90,8 +96,60 @@ public class Schedule extends Activity {
 		return 0;
 	}
 	
+	// return # hours of history behind planned schedule
+	@SuppressLint("SimpleDateFormat")
 	public double isProgressBehindSchedule() {
-		return 0;
+		double hisSum = 0, schSum = 0;
+		Cursor schCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
+		Cursor hisCursor = DBI.select("SELECT * FROM " + DBI.tableHistory);
+		Date currDate = new Date();
+		SimpleDateFormat timeParser = new SimpleDateFormat("HH:mm:ss");
+		SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd");
+		
+		// calculate scheduled exercise duration before today
+		if (schCursor.moveToFirst()) {
+			while(!schCursor.isAfterLast()) {
+				try {				
+					String schDate = schCursor.getString(0);
+					String schStart = schCursor.getString(1);
+					String schEnd = schCursor.getString(2);					
+					Date schDateDate = dateParser.parse(schDate);
+					Date schStartDate = timeParser.parse(schStart);
+					Date schEndDate = timeParser.parse(schEnd);
+					
+					// if the dates from Schedule is before today
+					if (schDateDate.before(currDate)) {
+						long diff = schEndDate.getTime() - schStartDate.getTime();
+						long diffHours = diff / (60 * 60 * 1000) % 24;
+						schSum += ((double) diffHours);
+					}
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				schCursor.moveToNext();
+			}
+		}
+		
+		// calculate the actual exercise duration before today
+		if (hisCursor.moveToFirst()) {
+			while(!hisCursor.isAfterLast()) {
+				try {
+					String hisDate = hisCursor.getString(0);
+					double duration = hisCursor.getDouble(3);
+					Date hisDateDate = dateParser.parse(hisDate);
+					
+					// if dates from History is before today
+					if (hisDateDate.before(currDate)) {
+						hisSum += duration;
+					}
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				hisCursor.moveToNext();
+			}
+		}
+		double hrsBehind = schSum - hisSum;
+		return hrsBehind;
 	}
 	
 	public boolean isRecomputeNeeded() {
@@ -103,7 +161,7 @@ public class Schedule extends Activity {
 		
 		if(calendarConflictsCount > 0) {
 			result = true;
-			stats += Integer.toString(calendarConflictsCount) + " conflicts with caledar. ";
+			stats += Integer.toString(calendarConflictsCount) + " conflicts with calendar. ";
 		}
 		if(weatherConflictsCount > 0) {
 			result = true;
@@ -114,7 +172,7 @@ public class Schedule extends Activity {
 			stats += Double.toString(behindHrsCount) + " hours behind the schedule. ";
 		}
 		if(result) {
-			stats += "We suggest you re-schedule your exercise plan.";
+			stats += "We suggest you reschedule your exercise plan.";
 			
 			// generate dialog to ask user if re-computation is needed
 			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
@@ -124,7 +182,7 @@ public class Schedule extends Activity {
 			alertDialogBuilder
 			.setMessage(stats)
 			.setCancelable(false)
-			.setPositiveButton("OK",new DialogInterface.OnClickListener() {
+			.setPositiveButton("Reschedule",new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog,int id) {
 					// if this button is clicked, close
 					computeSchedule();
@@ -140,8 +198,7 @@ public class Schedule extends Activity {
 			AlertDialog alertDialog = alertDialogBuilder.create(); 
 			// show alert dialog
 			alertDialog.show();
-		}
-		
+		}		
 		return result;
 	}
 	
@@ -182,7 +239,7 @@ public class Schedule extends Activity {
 				status = "PASSED |";
 			}
 			else {
-				status = "TO DO  |";
+				status = "TO DO    |";
 			}
 			String listEntry = status + " " + date + " " + start + " " + end;
 			listValues.add(listEntry);
