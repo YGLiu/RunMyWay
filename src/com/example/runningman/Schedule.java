@@ -171,6 +171,7 @@ public class Schedule extends Activity {
 			result = true;
 			stats += Double.toString(behindHrsCount) + " hours behind the schedule. ";
 		}
+		
 		if(result) {
 			stats += "We suggest you reschedule your exercise plan.";
 			
@@ -184,7 +185,6 @@ public class Schedule extends Activity {
 			.setCancelable(false)
 			.setPositiveButton("Reschedule",new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog,int id) {
-					// if this button is clicked, close
 					computeSchedule();
 				}
 			})
@@ -224,29 +224,63 @@ public class Schedule extends Activity {
 		Cursor cursor = DBI.select(query);
 		Date currentDate = new Date();
 		
-		cursor.moveToFirst();	
-		while(!cursor.isAfterLast())
-		{    
-			String date = cursor.getString(0);
-			String start = cursor.getString(1);
-			String end = cursor.getString(2);
-			cursor.moveToNext();
-			
-			Date entryDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-			
-			String status;
-			if(currentDate.after(entryDate)) {
-				status = "PASSED |";
+		// if Schedule table exist
+		if (cursor.moveToFirst()) {
+			while(!cursor.isAfterLast())
+			{    
+				String date = cursor.getString(0);
+				String start = cursor.getString(1);
+				String end = cursor.getString(2);
+				cursor.moveToNext();
+				
+				Date entryDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+				
+				String status;
+				if(currentDate.after(entryDate)) {
+					status = "PASSED |";
+				}
+				else {
+					status = "TO DO    |";
+				}
+				String listEntry = status + " " + date + " " + start + " " + end;
+				listValues.add(listEntry);
 			}
-			else {
-				status = "TO DO    |";
-			}
-			String listEntry = status + " " + date + " " + start + " " + end;
-			listValues.add(listEntry);
-		}
-		// display on the listView
-		ListView listview = (ListView) findViewById(R.id.listViewSchedule);
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listValues);
-		listview.setAdapter(adapter);
+			// display on the listView
+			ListView listview = (ListView) findViewById(R.id.listViewSchedule);
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listValues);
+			listview.setAdapter(adapter);
+		// if Schedule table does not exist,
+		// prompt user to build one
+		} else {
+			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
+			// set title
+			alertDialogBuilder.setTitle("Warning");
+			// set dialog message and button events
+			alertDialogBuilder
+			.setMessage("Currently you do not have a schedule. Would you like to build one?")
+			.setCancelable(false)
+			.setPositiveButton("Build",new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog,int id) {
+					computeSchedule();
+					// recursively call this again to display Schedule
+					try {
+						displaySchedule();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			})
+			.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog,int id) {
+					// if this button is clicked, just close
+					dialog.cancel();
+				}
+			});
+			// create alert dialog
+			AlertDialog alertDialog = alertDialogBuilder.create(); 
+			// show alert dialog
+			alertDialog.show();
+		}		
 	}
 }
