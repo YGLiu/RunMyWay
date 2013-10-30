@@ -2,6 +2,7 @@ package com.example.runningman;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
 import android.app.Activity;
@@ -14,6 +15,8 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TabHost;
 
+import com.jjoe64.graphview.BarGraphView;
+import com.jjoe64.graphview.CustomLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GraphView.GraphViewData;
 import com.jjoe64.graphview.GraphViewSeries;
@@ -128,8 +131,23 @@ public class History extends Activity {
 				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("Distance"));
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);  
-			GraphView GV = new LineGraphView(this,"Distance");
+			GraphView GV = new LineGraphView(this,"Distance (meters)");
+			GV.setCustomLabelFormatter(new CustomLabelFormatter() 
+			{   
+				@Override  
+				public String formatLabel(double value, boolean isValueX) 
+				{   if(isValueX)
+					{	long time = (long)value;
+						return new SimpleDateFormat("dd/MM",Locale.US).format(new Date(time));
+					}
+					else
+						return null;
+				}  
+			}); 
 			GV.addSeries(GVS);
+			GV.setViewPort(System.currentTimeMillis()-604800000, 604800000);
+			GV.setScalable(true);
+			GV.setScrollable(true);
 			LinearLayout layout = (LinearLayout) findViewById(R.id.tab1);
 			layout.addView(GV);
 		}
@@ -144,9 +162,24 @@ public class History extends Activity {
 			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Start")).getTime();
 				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("Duration"));
 			}
-			GraphViewSeries GVS = new GraphViewSeries(GVD);  
-			GraphView GV = new LineGraphView(this,"Duration");
+			GraphViewSeries GVS = new GraphViewSeries(GVD);
+			GraphView GV = new LineGraphView(this,"Duration (minutes)");
+			GV.setCustomLabelFormatter(new CustomLabelFormatter() 
+			{   
+				@Override  
+				public String formatLabel(double value, boolean isValueX) 
+				{   if(isValueX)
+					{	long time = (long)value;
+						return new SimpleDateFormat("dd/MM",Locale.US).format(new Date(time));
+					}
+					else
+						return null;
+				}  
+			}); 
 			GV.addSeries(GVS);
+			GV.setViewPort(System.currentTimeMillis()-604800000, 604800000);
+			GV.setScalable(true);
+			GV.setScrollable(true);
 			LinearLayout layout = (LinearLayout) findViewById(R.id.tab2);
 			layout.addView(GV);
 		}
@@ -165,8 +198,23 @@ public class History extends Activity {
 				GVD[i] = new GraphViewData(time,calories);
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);  
-			GraphView GV = new LineGraphView(this,"Calories Burnt");
+			GraphView GV = new LineGraphView(this,"Calories Burnt (Calories)");
+			GV.setCustomLabelFormatter(new CustomLabelFormatter() 
+			{   
+				@Override  
+				public String formatLabel(double value, boolean isValueX) 
+				{   if(isValueX)
+					{	long time = (long)value;
+						return new SimpleDateFormat("dd/MM",Locale.US).format(new Date(time));
+					}
+					else
+						return null;
+				}   
+			}); 
 			GV.addSeries(GVS);
+			GV.setViewPort(System.currentTimeMillis()-604800000, 604800000);
+			GV.setScalable(true);
+			GV.setScrollable(true);
 			LinearLayout layout = (LinearLayout) findViewById(R.id.tab3);
 			layout.addView(GV);
 		}
@@ -182,8 +230,23 @@ public class History extends Activity {
 				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("AveSpeed"));
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);  
-			GraphView GV = new LineGraphView(this,"Average Speed");
+			GraphView GV = new LineGraphView(this,"Average Speed (km/h)");
+			GV.setCustomLabelFormatter(new CustomLabelFormatter() 
+			{   
+				@Override  
+				public String formatLabel(double value, boolean isValueX) 
+				{   if(isValueX)
+					{	long time = (long)value;
+						return new SimpleDateFormat("dd/MM",Locale.US).format(new Date(time));
+					}
+					else
+						return null;
+				}   
+			}); 
 			GV.addSeries(GVS);
+			GV.setViewPort(System.currentTimeMillis()-604800000, 604800000);
+			GV.setScalable(true);
+			GV.setScrollable(true);
 			LinearLayout layout = (LinearLayout) findViewById(R.id.tab4);
 			layout.addView(GV);
 		}
