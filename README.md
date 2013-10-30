@@ -7,7 +7,7 @@ course of CS4274 (Multimedia and Mobile Networking).
 
 ### Setup
 
-1. Include the External JAR files into libraries of build path and export them in the order below. All the Google API files 
+Include the External JAR files into libraries of build path and export them in the order below. All the Google API files 
 are put inside libs\_calendar folder.
 
 * google-api-client-1.17.0-rc.jar
@@ -22,7 +22,9 @@ are put inside libs\_calendar folder.
 * protobuf-java-2.2.0.jar
 * google-api-service-calendar.jar
 
-2. Select "properties" of the project, then choose "Android". Set the API version to 4.3 and add these two libraries:
+Select "properties" of the project, then choose "Android". Set the API version to 4.3 and add these two libraries:
 
 * google-play-services\_lib
 * GraphView-master
+
+To use Google Map API

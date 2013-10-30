@@ -89,6 +89,7 @@ public class Schedule extends Activity {
 	public int isScheduleCollidesWeather() {
 		/*
 		 * TODO use Yahoo weather API
+		 * Assigned to: Hu Yang
 		 */
 		return 0;
 	}
@@ -203,6 +204,7 @@ public class Schedule extends Activity {
 		/*
 		* TODO
 		* Insert algorithm here
+		* Assigned to: Liu Yaguang
 		*/
 		
 		// this should be the last step of this method
@@ -254,7 +256,7 @@ public class Schedule extends Activity {
 			alertDialogBuilder.setTitle("Warning");
 			// set dialog message and button events
 			alertDialogBuilder
-			.setMessage("Currently you do not have a schedule. Would you like to build one?")
+			.setMessage("Currently you do not have a schedule.\nWould you like to build one?")
 			.setCancelable(false)
 			.setPositiveButton("Build",new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog,int id) {
