@@ -12,9 +12,18 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.example.weather.tools.AsciiUtils;
+import com.example.weather.tools.ImageUtils;
+import com.example.weather.tools.NetworkUtils;
+import com.example.weather.utils.YahooWeather4a.WeatherInfo;
+import com.example.weather.utils.YahooWeather4a.WeatherInfo.ForecastInfo;
+import com.example.weather.utils.YahooWeather4a.YahooWeatherInfoListener;
+import com.example.weather.utils.YahooWeather4a.YahooWeatherUtils;
 
 public class Schedule extends Activity {
 	private DBInterface DBI;
@@ -25,12 +34,8 @@ public class Schedule extends Activity {
 		setContentView(R.layout.activity_schedule);
 		DBI = new DBInterface(this);
 		
-		try {
-			displaySchedule();
-			isRecomputeNeeded();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		displaySchedule();
+		isRecomputeNeeded();
 	}
 
 	@Override
@@ -73,7 +78,7 @@ public class Schedule extends Activity {
 									calStartDate.equals(schStartDate) || calStartDate.equals(schEndDate) ||
 									(calEndDate.before(schEndDate) && calEndDate.after(schStartDate)) ||
 									calEndDate.equals(schStartDate) || calEndDate.equals(schEndDate)) {
-								// increment count by 1
+								// increment conflict count by 1
 								conflictCount ++;
 							}
 						} catch (ParseException e) {
@@ -91,8 +96,9 @@ public class Schedule extends Activity {
 	public int isScheduleCollidesWeather() {
 		/*
 		 * TODO use Yahoo weather API
-		 */
-		
+		 */		
+		WeatherInfo weatherInfo = new WeatherInfo ();
+		Log.d("weather date", weatherInfo.getCurrentConditionDate());
 		return 0;
 	}
 	
@@ -100,6 +106,7 @@ public class Schedule extends Activity {
 	@SuppressLint("SimpleDateFormat")
 	public double isProgressBehindSchedule() {
 		double hisSum = 0, schSum = 0;
+		double hrsBehind = 0;
 		Cursor schCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
 		Cursor hisCursor = DBI.select("SELECT * FROM " + DBI.tableHistory);
 		Date currDate = new Date();
@@ -128,8 +135,7 @@ public class Schedule extends Activity {
 				}
 				schCursor.moveToNext();
 			}
-		}
-		
+		}		
 		// calculate the actual exercise duration before today
 		if (hisCursor.moveToFirst()) {
 			while(!hisCursor.isAfterLast()) {
@@ -148,7 +154,7 @@ public class Schedule extends Activity {
 				hisCursor.moveToNext();
 			}
 		}
-		double hrsBehind = schSum - hisSum;
+		hrsBehind = schSum - hisSum;
 		return hrsBehind;
 	}
 	
@@ -161,15 +167,15 @@ public class Schedule extends Activity {
 		
 		if(calendarConflictsCount > 0) {
 			result = true;
-			stats += Integer.toString(calendarConflictsCount) + " conflicts with calendar. ";
+			stats += Integer.toString(calendarConflictsCount) + " conflicts with calendar.\n";
 		}
 		if(weatherConflictsCount > 0) {
 			result = true;
-			stats += Integer.toString(weatherConflictsCount) + " conflicts with weather. ";
+			stats += Integer.toString(weatherConflictsCount) + " conflicts with weather.\n";
 		}
 		if(behindHrsCount > 0) {
 			result = true;
-			stats += Double.toString(behindHrsCount) + " hours behind the schedule. ";
+			stats += Double.toString(behindHrsCount) + " hours behind the schedule.\n";
 		}
 		
 		if(result) {
@@ -210,48 +216,48 @@ public class Schedule extends Activity {
 		
 		// this should be the last step of this method
 		// display the new schedule
-		try {
-			displaySchedule();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		displaySchedule();
 	}
 	
 	@SuppressLint("SimpleDateFormat")
-	private void displaySchedule() throws Exception {
+	private void displaySchedule() {
+		// debugging purpose, remove Schedule table
+		// DBI.delete(DBI.tableSchedule, null);
 		List<String> listValues = new ArrayList<String>();
 		String query = "SELECT * FROM " + DBI.tableSchedule + " ORDER BY Date ASC";
 		Cursor cursor = DBI.select(query);
 		Date currentDate = new Date();
 		
-		// if Schedule table exist
+		// if Schedule table is not empty
 		if (cursor.moveToFirst()) {
 			while(!cursor.isAfterLast())
-			{    
+			{	
 				String date = cursor.getString(0);
 				String start = cursor.getString(1);
 				String end = cursor.getString(2);
-				cursor.moveToNext();
-				
-				Date entryDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-				
-				String status;
-				if(currentDate.after(entryDate)) {
-					status = "PASSED |";
+				cursor.moveToNext();				
+				try {
+					Date entryDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);					
+					String status;
+					if(currentDate.after(entryDate)) {
+						status = "PASSED |";
+					}
+					else {
+						status = "TO DO    |";
+					}
+					String listEntry = status + " " + date + " " + start + " " + end;
+					listValues.add(listEntry);
+				} catch (ParseException e) {
+					e.printStackTrace();
 				}
-				else {
-					status = "TO DO    |";
-				}
-				String listEntry = status + " " + date + " " + start + " " + end;
-				listValues.add(listEntry);
 			}
 			// display on the listView
 			ListView listview = (ListView) findViewById(R.id.listViewSchedule);
 			ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listValues);
 			listview.setAdapter(adapter);
-		// if Schedule table does not exist,
-		// prompt user to build one
-		} else {
+		}
+		// if Schedule table is empty, prompt user to build one
+		else {
 			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
 			// set title
 			alertDialogBuilder.setTitle("Warning");
@@ -263,12 +269,7 @@ public class Schedule extends Activity {
 				public void onClick(DialogInterface dialog,int id) {
 					computeSchedule();
 					// recursively call this again to display Schedule
-					try {
-						displaySchedule();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					displaySchedule();
 				}
 			})
 			.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
@@ -281,6 +282,6 @@ public class Schedule extends Activity {
 			AlertDialog alertDialog = alertDialogBuilder.create(); 
 			// show alert dialog
 			alertDialog.show();
-		}		
+		}
 	}
 }
