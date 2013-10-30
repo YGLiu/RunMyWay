@@ -66,7 +66,7 @@ public class Schedule extends Activity {
 						String calStart = calendarCursor.getString(1);
 						String schStart = scheduleCursor.getString(1);
 						String calEnd = calendarCursor.getString(2);
-						String schEnd = scheduleCursor.getString(2);
+						String schEnd = scheduleCursor.getString(2); 
 						
 						try {
 							SimpleDateFormat parser = new SimpleDateFormat("HH:mm:ss");
