@@ -36,6 +36,7 @@ public class Schedule extends Activity {
 		
 		displaySchedule();
 		isRecomputeNeeded();
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override
