@@ -17,14 +17,6 @@ import android.view.Menu;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.example.weather.tools.AsciiUtils;
-import com.example.weather.tools.ImageUtils;
-import com.example.weather.tools.NetworkUtils;
-import com.example.weather.utils.YahooWeather4a.WeatherInfo;
-import com.example.weather.utils.YahooWeather4a.WeatherInfo.ForecastInfo;
-import com.example.weather.utils.YahooWeather4a.YahooWeatherInfoListener;
-import com.example.weather.utils.YahooWeather4a.YahooWeatherUtils;
-
 public class Schedule extends Activity {
 	private DBInterface DBI;
 
@@ -36,7 +28,7 @@ public class Schedule extends Activity {
 		DBI = new DBInterface(this);
 	
 		displaySchedule();
-		isRecomputeNeeded();	
+		isRecomputeNeeded();
 	}
 
 	@Override
@@ -234,7 +226,7 @@ public class Schedule extends Activity {
 				String date = cursor.getString(0);
 				String start = cursor.getString(1);
 				String end = cursor.getString(2);
-				cursor.moveToNext();				
+				cursor.moveToNext();
 				try {
 					Date entryDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);					
 					String status;
