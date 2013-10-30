@@ -32,11 +32,11 @@ public class Schedule extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_schedule);
-		DBI = new DBInterface(this);
-		
-		displaySchedule();
-		isRecomputeNeeded();
 		getActionBar().setDisplayHomeAsUpEnabled(true);
+		DBI = new DBInterface(this);
+	
+		displaySchedule();
+		isRecomputeNeeded();	
 	}
 
 	@Override
@@ -97,9 +97,7 @@ public class Schedule extends Activity {
 	public int isScheduleCollidesWeather() {
 		/*
 		 * TODO use Yahoo weather API
-		 */		
-		WeatherInfo weatherInfo = new WeatherInfo ();
-		Log.d("weather date", weatherInfo.getCurrentConditionDate());
+		 */
 		return 0;
 	}
 	
