@@ -31,6 +31,7 @@ public class Schedule extends Activity {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		getActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override

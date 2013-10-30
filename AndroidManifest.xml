@@ -84,6 +84,9 @@
             android:name="com.example.runningman.Schedule"
             android:label="@string/title_activity_schedule"
             android:parentActivityName="com.example.runningman.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.runningman.MainActivity" />
         </activity>
         <activity
             android:name="com.example.runningman.History"
