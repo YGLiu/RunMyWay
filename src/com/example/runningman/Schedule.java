@@ -98,11 +98,21 @@ public class Schedule extends Activity {
 	}
 	
 	public int isScheduleCollidesWeather() {
-		/*
-		 * TODO use Yahoo weather API
-		 * Assigned to: Hu Yang
-		 */
-		return 0;
+		int conflictCount = 0;
+		Cursor scheduleCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
+		
+		// if exist at least one event
+		if (scheduleCursor.moveToFirst()) {	
+			while(!scheduleCursor.isAfterLast()) {
+				String scheduleDate = scheduleCursor.getString(0);				
+				// select events from calendar which have the same date
+				String query = "SELECT * FROM " + DBI.tableWeather + " WHERE Date='" + scheduleDate + "'";			
+				Cursor weatherCursor = DBI.select(query);
+				
+				weatherCursor.moveToNext();
+			}
+		}
+		return conflictCount;
 	}
 	
 	// return # hours of history behind planned schedule

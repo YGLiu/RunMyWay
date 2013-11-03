@@ -29,22 +29,28 @@ import com.example.weather.utils.YahooWeather4a.YahooWeatherInfoListener;
 import com.example.weather.utils.YahooWeather4a.YahooWeatherUtils;
 
 public class Weather implements YahooWeatherInfoListener {
-	
-	/*
-	private ImageView ivWeather0;
-	private ImageView ivWeather1;
-	private ImageView ivWeather2;
-	private TextView tvWeather0;
-	private TextView tvWeather1;
-	private TextView tvWeather2;
-	private TextView tvErrorMessage;
-	private TextView tvTitle;
-	*/
-	//private EditText etAreaOfCity;
-	//private Button btSearch;
 	private YahooWeatherUtils yahooWeatherUtils = YahooWeatherUtils.getInstance();
     private String location = "Singapore";
     private DBInterface DBI;
+    // define the policy of poor weather condition
+    public String[] poorConditionArray = new String[] {
+		"tornado",
+		"storm",
+		"hurricane",
+		"thunderstorms",
+		"rain",
+		"snow",
+		"drizzle",
+		"showers",
+		"hail",
+		"sleet",
+		"dust",
+		"foggy",
+		"haze",
+		"smoky",
+		"blustery",
+		"thundershowers",
+	};
     
     public Weather(Context context) {
     	String convertedlocation = AsciiUtils.convertNonAscii(location);
@@ -66,6 +72,7 @@ public class Weather implements YahooWeatherInfoListener {
         	Log.d("date", newDateString);
 			Log.d("weather", weather);
         	Log.d("temp", Integer.toString(temp));
+        	Log.d("weather condition", Boolean.toString(this.isWeatherPoorCondition(weather)));
         	
         	ContentValues CV = new ContentValues();
 			CV.put("Date", newDateString);
@@ -92,6 +99,17 @@ public class Weather implements YahooWeatherInfoListener {
 			int forecast2Temp = forecastInfo2.getForecastTempHighC();
 			this.insertWeatheDB(forecast2Date, forecast2Weather, forecast2Temp);
 		}
+	}
+	
+	public boolean isWeatherPoorCondition(String weatherText) {
+		boolean result = false;
+		for (int i = 0; i < this.poorConditionArray.length; i++) {
+			if(weatherText.toLowerCase().contains(this.poorConditionArray[i])){
+				result = true;
+				return result;
+			}
+		}
+		return result;
 	}
     
 	/*
