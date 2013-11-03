@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.example.weather.tools.NetworkUtils;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,6 +18,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class Schedule extends Activity {
 	private DBInterface DBI;
@@ -26,7 +29,15 @@ public class Schedule extends Activity {
 		setContentView(R.layout.activity_schedule);
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		DBI = new DBInterface(this);
-	
+		
+		// check network availability
+		if (!NetworkUtils.isConnected(getApplicationContext())) {
+        	Toast.makeText(getApplicationContext(), "Network connection is unavailable!!", Toast.LENGTH_SHORT).show();
+        	return;
+        }
+		
+		// initiate Weather table
+		Weather weather = new Weather(getApplicationContext());
 		displaySchedule();
 		isRecomputeNeeded();
 	}

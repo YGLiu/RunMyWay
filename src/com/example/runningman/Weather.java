@@ -1,10 +1,18 @@
 package com.example.runningman;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import android.app.Activity;
+import android.content.ContentValues;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,8 +28,9 @@ import com.example.weather.utils.YahooWeather4a.WeatherInfo.ForecastInfo;
 import com.example.weather.utils.YahooWeather4a.YahooWeatherInfoListener;
 import com.example.weather.utils.YahooWeather4a.YahooWeatherUtils;
 
-public class Weather extends Activity implements YahooWeatherInfoListener {
+public class Weather implements YahooWeatherInfoListener {
 	
+	/*
 	private ImageView ivWeather0;
 	private ImageView ivWeather1;
 	private ImageView ivWeather2;
@@ -30,10 +39,62 @@ public class Weather extends Activity implements YahooWeatherInfoListener {
 	private TextView tvWeather2;
 	private TextView tvErrorMessage;
 	private TextView tvTitle;
+	*/
 	//private EditText etAreaOfCity;
 	//private Button btSearch;
 	private YahooWeatherUtils yahooWeatherUtils = YahooWeatherUtils.getInstance();
     private String location = "Singapore";
+    private DBInterface DBI;
+    
+    public Weather(Context context) {
+    	String convertedlocation = AsciiUtils.convertNonAscii(location);
+        yahooWeatherUtils.queryYahooWeather(context, convertedlocation, this);
+        DBI = new DBInterface(context);
+    }
+
+	@Override
+	public void gotWeatherInfo(WeatherInfo weatherInfo) {
+		// remove the old entries for they are out-dated.
+		DBI.delete(DBI.tableWeather, null);
+		this.updateWeatherDB(weatherInfo);
+	}
+	
+	private void insertWeatheDB(String date, String weather, int temp) {
+		try {
+        	String newDateString = new SimpleDateFormat("yyyy-MM-dd",Locale.US)
+        		.format(new SimpleDateFormat("dd MMM yyyy",Locale.US).parse(date));
+        	Log.d("date", newDateString);
+			Log.d("weather", weather);
+        	Log.d("temp", Integer.toString(temp));
+        	
+        	ContentValues CV = new ContentValues();
+			CV.put("Date", newDateString);
+			CV.put("Weather", weather);
+			CV.put("Temperature", temp);
+			DBI.insert(DBI.tableWeather, CV);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void updateWeatherDB(WeatherInfo weatherInfo) {
+		if(weatherInfo != null) {
+			// do not need forecast 1 which is today
+			ForecastInfo forecastInfo2 = weatherInfo.getForecastInfo2();
+			
+			String currDateString = weatherInfo.getCurrentConditionDate().substring(5, 16);
+			String currWeather = weatherInfo.getCurrentText();
+			int currTemp = weatherInfo.getCurrentTempC();
+			this.insertWeatheDB(currDateString, currWeather, currTemp);
+			
+			String forecast2Date = forecastInfo2.getForecastDate();
+			String forecast2Weather = forecastInfo2.getForecastText();
+			int forecast2Temp = forecastInfo2.getForecastTempHighC();
+			this.insertWeatheDB(forecast2Date, forecast2Weather, forecast2Temp);
+		}
+	}
+    
+	/*
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -44,7 +105,7 @@ public class Weather extends Activity implements YahooWeatherInfoListener {
 		if (!NetworkUtils.isConnected(getApplicationContext())) {
         	Toast.makeText(getApplicationContext(), "Network connection is unavailable!!", Toast.LENGTH_SHORT).show();
         	return;
-        }        
+        }
     	tvTitle = (TextView) findViewById(R.id.textview_title);
 		tvWeather0 = (TextView) findViewById(R.id.textview_weather_info_0);
 		tvWeather1 = (TextView) findViewById(R.id.textview_weather_info_1);
@@ -58,9 +119,9 @@ public class Weather extends Activity implements YahooWeatherInfoListener {
         yahooWeatherUtils.queryYahooWeather(getApplicationContext(), convertedlocation, this);
 	}
 
-	/**
-	 * Set up the {@link android.app.ActionBar}.
-	 */
+
+	// Set up the {@link android.app.ActionBar}.
+
 	private void setupActionBar() {
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -90,9 +151,9 @@ public class Weather extends Activity implements YahooWeatherInfoListener {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	@Override
-	public void gotWeatherInfo(WeatherInfo weatherInfo) {
-        if(weatherInfo != null) {
+	*/    	
+	
+	/*
         	setNormalLayout();
 			tvTitle.setText(weatherInfo.getTitle() + "\n"
 					+ weatherInfo.getLocationCity() + ", "
@@ -107,13 +168,6 @@ public class Weather extends Activity implements YahooWeatherInfoListener {
 						       "Pressure: " + weatherInfo.getAtmospherePressure() + "\n" +
 					           "Visibility: " + weatherInfo.getAtmosphereVisibility()
 					           );
-//			final ForecastInfo forecastInfo3 = weatherInfo.getForecastInfo3();
-//			tvWeather0.setText("====== FORECAST 0 ======" + "\n" +
-//			                   "date: " + forecastInfo3.getForecastDate() + "\n" +
-//			                   "weather: " + forecastInfo3.getForecastText() + "\n" +
-//					           "low  temperature in C: " + forecastInfo3.getForecastTempLowC() + "\n" +
-//			                   "high temperature in C: " + forecastInfo3.getForecastTempHighC() + "\n" 
-//					           );
 			final ForecastInfo forecastInfo1 = weatherInfo.getForecastInfo1();
 			tvWeather1.setText("====== FORECAST 1 ======" + "\n" +
 			                   "date: " + forecastInfo1.getForecastDate() + "\n" +
@@ -138,8 +192,9 @@ public class Weather extends Activity implements YahooWeatherInfoListener {
         } else {
         	setNoResultLayout();
         }
-	}
+        */
 	
+	/*
 	private void setNormalLayout() {
 		ivWeather0.setVisibility(View.VISIBLE);
 		ivWeather1.setVisibility(View.VISIBLE);
@@ -163,6 +218,7 @@ public class Weather extends Activity implements YahooWeatherInfoListener {
 		tvErrorMessage.setText("Sorry, no result returned");
 	}
 	
+	
 	class LoadWebImagesTask extends AsyncTask<String, Void, Bitmap[]> {
 
 		@Override
@@ -183,4 +239,5 @@ public class Weather extends Activity implements YahooWeatherInfoListener {
 		}
 		
 	}
+	*/
 }

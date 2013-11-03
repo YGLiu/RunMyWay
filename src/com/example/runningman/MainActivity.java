@@ -37,10 +37,6 @@ public class MainActivity extends Activity {
     	startActivity(intent);
     }
     
-    public void Weather(View view) {
-    	Intent intent = new Intent(this, Weather.class);
-    	startActivity(intent);
-    }
     public void History(View view) {
     	Intent intent = new Intent(this, History.class);
     	startActivity(intent);
