@@ -14,6 +14,8 @@ public class Sql extends SQLiteOpenHelper {
   private static final String CreateTableSession = "create table Session(SeqNum int, Lat real, Lng real);";
   private static final String CreateTableCalendar = "create table Calendar(Date text, Start text, End text);";
   private static final String CreateTableSchedule = "create table Schedule(Date text, Start text, End text);";
+  private static final String CreateTableWeather = "create table Weather(Date text, Weather text, Temperature real);";
+  
   
   public Sql(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -26,6 +28,7 @@ public class Sql extends SQLiteOpenHelper {
     database.execSQL(CreateTableSession);
     database.execSQL(CreateTableCalendar);
     database.execSQL(CreateTableSchedule);
+    database.execSQL(CreateTableWeather);
   }
 
   @Override

@@ -13,6 +13,7 @@ public class DBInterface{
   public String tableSession = "Session";
   public String tableCalendar = "Calendar";
   public String tableSchedule = "Schedule";
+  public String tableWeather = "Weather";
 
   public DBInterface(Context context) 
   {
