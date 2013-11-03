@@ -3,8 +3,10 @@ package com.example.runningman;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import com.example.weather.tools.NetworkUtils;
 
@@ -14,7 +16,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -22,7 +23,15 @@ import android.widget.Toast;
 
 public class Schedule extends Activity {
 	private DBInterface DBI;
-
+	private double AveDuration;
+	private int count_Mon;
+	private int count_Tue;
+	private int count_Wed;
+	private int count_Thu;
+	private int count_Fri;
+	private int count_Sat;
+	private int count_Sun;
+	private int num_days;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -38,6 +47,7 @@ public class Schedule extends Activity {
 		
 		// initiate Weather table
 		Weather weather = new Weather(getApplicationContext());
+		getHistoryPattern();
 		displaySchedule();
 		isRecomputeNeeded();
 	}
@@ -297,5 +307,49 @@ public class Schedule extends Activity {
 			// show alert dialog
 			alertDialog.show();
 		}
+	}
+
+	private void getHistoryPattern()
+	{	try
+		{	ArrayList<HistoryData> historyData = new ArrayList<HistoryData>();
+			Cursor cursor = DBI.select("SELECT Date,Duration FROM " + DBI.tableHistory);
+			cursor.moveToFirst();
+			AveDuration = 0;
+			double sum = 0;
+			int count = 0;
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.DATE, -30);
+			Date a_month_ago = cal.getTime();
+			count_Mon = count_Tue = count_Wed = count_Thu = count_Fri = count_Sat = count_Sun = 0;
+			while(!cursor.isAfterLast())
+			{	HistoryData history = new HistoryData(cursor.getString(0),"","",cursor.getDouble(1),0,0); 
+				historyData.add(history);
+				cursor.moveToNext();
+			}
+			for(HistoryData data : historyData)
+			{	sum += data.duration;
+				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Mon"))
+					count_Mon++;
+				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Tue"))
+					count_Tue++;
+				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Wed"))
+					count_Wed++;
+				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Thu"))
+					count_Thu++;
+				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Fri"))
+					count_Fri++;
+				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Sat"))
+					count_Sat++;
+				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Sun"))
+					count_Sun++;
+				if((new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).after(a_month_ago))
+					count++;
+			}
+			AveDuration = sum / historyData.size();
+			if(count != 0)
+				num_days = 30 / count;
+		}
+		catch(Exception e)
+		{	e.printStackTrace(); }
 	}
 }
