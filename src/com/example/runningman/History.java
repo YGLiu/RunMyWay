@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -15,7 +14,6 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TabHost;
 
-import com.jjoe64.graphview.BarGraphView;
 import com.jjoe64.graphview.CustomLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GraphView.GraphViewData;
@@ -23,7 +21,7 @@ import com.jjoe64.graphview.GraphViewSeries;
 import com.jjoe64.graphview.LineGraphView;
 
 public class History extends Activity {
-	private ArrayList<ContentValues> historyData = new ArrayList<ContentValues>();
+	private ArrayList<HistoryData> historyData = new ArrayList<HistoryData>();
 	private DBInterface DBI;
 	private int size;
 	@Override
@@ -96,14 +94,11 @@ public class History extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	private void DisplayHistory()
-	{	//test();
-		readDatabase();
+	{	readDatabase();
 		DistanceHistory();
 		DurationHistory();
 		CaloriesHistory();
 		AveSpeedHistory();
-		for(int i=0; i<historyData.size();i++)
-			System.out.println(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Duration")+historyData.get(i).getAsString("Distance")+historyData.get(i).getAsString("AveSpeed"));
 	}
 	private void readDatabase()
 	{	historyData.clear();
@@ -111,14 +106,8 @@ public class History extends Activity {
 		size = cursor.getCount();
 		cursor.moveToFirst();
 		while(!cursor.isAfterLast())
-		{	ContentValues CV = new ContentValues();
-			CV.put("Date", cursor.getString(0));
-			CV.put("Start", cursor.getString(1));
-			CV.put("End", cursor.getString(2));
-			CV.put("Duration", cursor.getDouble(3));
-			CV.put("Distance", cursor.getDouble(4));
-			CV.put("AveSpeed", cursor.getDouble(5));
-			historyData.add(CV);
+		{	HistoryData history = new HistoryData(cursor.getString(0),cursor.getString(1),cursor.getString(2),cursor.getDouble(3),cursor.getDouble(4),cursor.getDouble(5));
+			historyData.add(history);
 			cursor.moveToNext();
 		}
 	}
@@ -127,8 +116,8 @@ public class History extends Activity {
 		{	GraphViewData[] GVD = new GraphViewData[size];
 			long time;
 			for(int i=0;i<size;i++)
-			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Start")).getTime();
-				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("Distance"));
+			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).date+historyData.get(i).start).getTime();
+				GVD[i] = new GraphViewData(time,historyData.get(i).distance);
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);  
 			GraphView GV = new LineGraphView(this,"Distance (meters)");
@@ -159,8 +148,8 @@ public class History extends Activity {
 		{	GraphViewData[] GVD = new GraphViewData[size];
 			long time;
 			for(int i=0;i<size;i++)
-			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Start")).getTime();
-				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("Duration"));
+			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).date+historyData.get(i).start).getTime();
+				GVD[i] = new GraphViewData(time,historyData.get(i).duration);
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);
 			GraphView GV = new LineGraphView(this,"Duration (minutes)");
@@ -193,8 +182,8 @@ public class History extends Activity {
 			GraphViewData[] GVD = new GraphViewData[size];
 			long time;
 			for(int i=0;i<size;i++)
-			{	calories = (weight*((historyData.get(i).getAsDouble("AveSpeed")*1000/60)*0.2+3.5)/3.5) * (historyData.get(i).getAsDouble("Duration")/60);
-				time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Start")).getTime();
+			{	calories = (weight*((historyData.get(i).aveSpeed*1000/60)*0.2+3.5)/3.5) * (historyData.get(i).duration/60);
+			time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).date+historyData.get(i).start).getTime();
 				GVD[i] = new GraphViewData(time,calories);
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);  
@@ -226,8 +215,8 @@ public class History extends Activity {
 		{	GraphViewData[] GVD = new GraphViewData[size];
 			long time;
 			for(int i=0;i<size;i++)
-			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).getAsString("Date")+historyData.get(i).getAsString("Start")).getTime();
-				GVD[i] = new GraphViewData(time,historyData.get(i).getAsDouble("AveSpeed"));
+			{	time = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(historyData.get(i).date+historyData.get(i).start).getTime();
+				GVD[i] = new GraphViewData(time,historyData.get(i).aveSpeed);
 			}
 			GraphViewSeries GVS = new GraphViewSeries(GVD);  
 			GraphView GV = new LineGraphView(this,"Average Speed (km/h)");
