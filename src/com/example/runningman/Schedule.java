@@ -32,6 +32,7 @@ public class Schedule extends Activity {
 	private int count_Sat;
 	private int count_Sun;
 	private int num_days;
+	private Weather weather;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -46,7 +47,7 @@ public class Schedule extends Activity {
         }
 		
 		// initiate Weather table
-		Weather weather = new Weather(getApplicationContext());
+		weather = new Weather(getApplicationContext());
 		getHistoryPattern();
 		displaySchedule();
 		isRecomputeNeeded();
@@ -115,10 +116,14 @@ public class Schedule extends Activity {
 		if (scheduleCursor.moveToFirst()) {	
 			while(!scheduleCursor.isAfterLast()) {
 				String scheduleDate = scheduleCursor.getString(0);				
-				// select events from calendar which have the same date
+				// select events from Weather which have the same date
 				String query = "SELECT * FROM " + DBI.tableWeather + " WHERE Date='" + scheduleDate + "'";			
 				Cursor weatherCursor = DBI.select(query);
-				
+				String weatherText = weatherCursor.getString(1);
+				// if poor weather condition, increment count by 1
+				if (weather.isWeatherPoorCondition(weatherText)) {
+					conflictCount ++;
+				}
 				weatherCursor.moveToNext();
 			}
 		}
@@ -126,15 +131,14 @@ public class Schedule extends Activity {
 	}
 	
 	// return # hours of history behind planned schedule
-	@SuppressLint("SimpleDateFormat")
 	public double isProgressBehindSchedule() {
 		double hisSum = 0, schSum = 0;
 		double hrsBehind = 0;
 		Cursor schCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
 		Cursor hisCursor = DBI.select("SELECT * FROM " + DBI.tableHistory);
 		Date currDate = new Date();
-		SimpleDateFormat timeParser = new SimpleDateFormat("HH:mm:ss");
-		SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat timeParser = new SimpleDateFormat("HH:mm:ss", Locale.US);
+		SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 		
 		// calculate scheduled exercise duration before today
 		if (schCursor.moveToFirst()) {
@@ -243,7 +247,6 @@ public class Schedule extends Activity {
 		displaySchedule();
 	}
 	
-	@SuppressLint("SimpleDateFormat")
 	private void displaySchedule() {
 		// debugging purpose, remove Schedule table
 		// DBI.delete(DBI.tableSchedule, null);
@@ -261,7 +264,7 @@ public class Schedule extends Activity {
 				String end = cursor.getString(2);
 				cursor.moveToNext();
 				try {
-					Date entryDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);					
+					Date entryDate = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(date);					
 					String status;
 					if(currentDate.after(entryDate)) {
 						status = "PASSED |";
