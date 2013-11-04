@@ -8,20 +8,26 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import com.example.weather.tools.NetworkUtils;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class Schedule extends Activity {
+import com.example.weather.tools.NetworkUtils;
+import com.google.android.gms.maps.model.LatLng;
+
+public class Schedule extends Activity implements LocationListener {
 	private DBInterface DBI;
 	private double AveDuration;
 	private int count_Mon;
@@ -31,7 +37,12 @@ public class Schedule extends Activity {
 	private int count_Fri;
 	private int count_Sat;
 	private int count_Sun;
+	private int count_morning;
+	private int count_afternoon;
+	private int count_evening;
+	private int count_midnight;
 	private int num_days;
+	private LatLng current_Location;
 	private Weather weather;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +60,7 @@ public class Schedule extends Activity {
 		// initiate Weather table
 		weather = new Weather(getApplicationContext());
 		getHistoryPattern();
+		getCurrentLocation();
 		displaySchedule();
 		isRecomputeNeeded();
 	}
@@ -315,7 +327,7 @@ public class Schedule extends Activity {
 	private void getHistoryPattern()
 	{	try
 		{	ArrayList<HistoryData> historyData = new ArrayList<HistoryData>();
-			Cursor cursor = DBI.select("SELECT Date,Duration FROM " + DBI.tableHistory);
+			Cursor cursor = DBI.select("SELECT Date,Duration,Start FROM " + DBI.tableHistory);
 			cursor.moveToFirst();
 			AveDuration = 0;
 			double sum = 0;
@@ -324,8 +336,9 @@ public class Schedule extends Activity {
 			cal.add(Calendar.DATE, -30);
 			Date a_month_ago = cal.getTime();
 			count_Mon = count_Tue = count_Wed = count_Thu = count_Fri = count_Sat = count_Sun = 0;
+			count_morning = count_afternoon = count_evening = count_midnight = 0;
 			while(!cursor.isAfterLast())
-			{	HistoryData history = new HistoryData(cursor.getString(0),"","",cursor.getDouble(1),0,0); 
+			{	HistoryData history = new HistoryData(cursor.getString(0),cursor.getString(2),"",cursor.getDouble(1),0,0); 
 				historyData.add(history);
 				cursor.moveToNext();
 			}
@@ -347,6 +360,14 @@ public class Schedule extends Activity {
 					count_Sun++;
 				if((new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).after(a_month_ago))
 					count++;
+				if(0 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() < 6)
+					count_midnight++;
+				if(6 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() < 12)
+					count_morning++;
+				if(12 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() < 18)
+					count_afternoon++;
+				if(18 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() <= 23)
+					count_evening++;
 			}
 			AveDuration = sum / historyData.size();
 			if(count != 0)
@@ -355,4 +376,24 @@ public class Schedule extends Activity {
 		catch(Exception e)
 		{	e.printStackTrace(); }
 	}
+	private void getCurrentLocation()
+	{	LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		Criteria criteria = new Criteria();
+		String provider = locationManager.getBestProvider(criteria, true);
+		Location location = locationManager.getLastKnownLocation(provider);
+		if(location!=null)
+		    onLocationChanged(location);
+		locationManager.requestLocationUpdates(provider, 1000, 0, this);
+	}
+
+	@Override
+	public void onLocationChanged(Location location) {
+		current_Location = new LatLng(location.getLatitude(), location.getLongitude());
+	}
+	@Override
+	public void onProviderDisabled(String provider) {}
+	@Override
+	public void onProviderEnabled(String provider) {}
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {}
 }
