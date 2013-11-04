@@ -13,7 +13,7 @@ public class Sql extends SQLiteOpenHelper {
   private static final String CreateTableHistory = "create table History(Date text, Start text, End text, Duration real, Distance real, AveSpeed real);";
   private static final String CreateTableSession = "create table Session(SeqNum int, Lat real, Lng real);";
   private static final String CreateTableCalendar = "create table Calendar(Date text, Start text, End text);";
-  private static final String CreateTableSchedule = "create table Schedule(Date text, Start text, End text);";
+  private static final String CreateTableSchedule = "create table Schedule(Id int PRIMAY KEY AUTO_INCREMENT, Date text, Start text, End text);";
   private static final String CreateTableWeather = "create table Weather(Date text, Weather text, Temperature real);";
   
   

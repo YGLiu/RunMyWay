@@ -62,7 +62,6 @@ public class Schedule extends Activity implements LocationListener {
 		getHistoryPattern();
 		getCurrentLocation();
 		displaySchedule();
-		isRecomputeNeeded();
 	}
 
 	@Override
@@ -72,16 +71,15 @@ public class Schedule extends Activity implements LocationListener {
 		return true;
 	}
 	
-	// return # collisions if they collide
-	@SuppressLint("SimpleDateFormat")
-	public int isScheduleCollidesCalendar() {
-		int conflictCount = 0;
+	// return an ArrayList of conflicting Id if they collide
+	public ArrayList<String> isScheduleCollidesCalendar() {
+		ArrayList<String> coflictIdList = new ArrayList<String>();
 		Cursor scheduleCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
 		
 		// if exist at least one event
 		if (scheduleCursor.moveToFirst()) {	
 			while(!scheduleCursor.isAfterLast()) {
-				String scheduleDate = scheduleCursor.getString(0);				
+				String scheduleDate = scheduleCursor.getString(1);				
 				// select events from calendar which have the same date
 				String query = "SELECT * FROM " + DBI.tableCalendar + " WHERE Date='" + scheduleDate + "'";			
 				Cursor calendarCursor = DBI.select(query);
@@ -89,13 +87,14 @@ public class Schedule extends Activity implements LocationListener {
 				if (calendarCursor.moveToFirst()) {
 					while(!calendarCursor.isAfterLast()) {
 						// conversion to Date type
-						String calStart = calendarCursor.getString(1);
-						String schStart = scheduleCursor.getString(1);
-						String calEnd = calendarCursor.getString(2);
-						String schEnd = scheduleCursor.getString(2); 
+						String schId = Integer.toString((scheduleCursor.getInt(0)));
+						String calStart = calendarCursor.getString(2);
+						String schStart = scheduleCursor.getString(2);
+						String calEnd = calendarCursor.getString(3);
+						String schEnd = scheduleCursor.getString(3);
 						
 						try {
-							SimpleDateFormat parser = new SimpleDateFormat("HH:mm:ss");
+							SimpleDateFormat parser = new SimpleDateFormat("HH:mm:ss", Locale.US);
 							Date calStartDate = parser.parse(calStart);
 							Date calEndDate = parser.parse(calEnd);
 							Date schStartDate = parser.parse(schStart);
@@ -105,8 +104,8 @@ public class Schedule extends Activity implements LocationListener {
 									calStartDate.equals(schStartDate) || calStartDate.equals(schEndDate) ||
 									(calEndDate.before(schEndDate) && calEndDate.after(schStartDate)) ||
 									calEndDate.equals(schStartDate) || calEndDate.equals(schEndDate)) {
-								// increment conflict count by 1
-								conflictCount ++;
+								// add an Id to the ArrayList
+								coflictIdList.add(schId);
 							}
 						} catch (ParseException e) {
 							e.printStackTrace();
@@ -117,29 +116,30 @@ public class Schedule extends Activity implements LocationListener {
 				scheduleCursor.moveToNext();
 			}
 		}
-		return conflictCount;
+		return coflictIdList;
 	}
 	
-	public int isScheduleCollidesWeather() {
-		int conflictCount = 0;
+	public ArrayList<String> isScheduleCollidesWeather() {
+		ArrayList<String> conflictIdList = new ArrayList<String>();
 		Cursor scheduleCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
 		
 		// if exist at least one event
-		if (scheduleCursor.moveToFirst()) {	
+		if (scheduleCursor.moveToFirst()) {
 			while(!scheduleCursor.isAfterLast()) {
-				String scheduleDate = scheduleCursor.getString(0);				
+				String schId = Integer.toString(scheduleCursor.getInt(0));
+				String scheduleDate = scheduleCursor.getString(1);				
 				// select events from Weather which have the same date
 				String query = "SELECT * FROM " + DBI.tableWeather + " WHERE Date='" + scheduleDate + "'";			
 				Cursor weatherCursor = DBI.select(query);
 				String weatherText = weatherCursor.getString(1);
 				// if poor weather condition, increment count by 1
 				if (weather.isWeatherPoorCondition(weatherText)) {
-					conflictCount ++;
+					conflictIdList.add(schId);
 				}
 				weatherCursor.moveToNext();
 			}
 		}
-		return conflictCount;
+		return conflictIdList;
 	}
 	
 	// return # hours of history behind planned schedule
@@ -156,9 +156,9 @@ public class Schedule extends Activity implements LocationListener {
 		if (schCursor.moveToFirst()) {
 			while(!schCursor.isAfterLast()) {
 				try {				
-					String schDate = schCursor.getString(0);
-					String schStart = schCursor.getString(1);
-					String schEnd = schCursor.getString(2);					
+					String schDate = schCursor.getString(1);
+					String schStart = schCursor.getString(2);
+					String schEnd = schCursor.getString(3);
 					Date schDateDate = dateParser.parse(schDate);
 					Date schStartDate = timeParser.parse(schStart);
 					Date schEndDate = timeParser.parse(schEnd);
@@ -197,29 +197,38 @@ public class Schedule extends Activity implements LocationListener {
 		return hrsBehind;
 	}
 	
-	public boolean isRecomputeNeeded() {
-		boolean result = false;
-		String stats = "";
-		int calendarConflictsCount = isScheduleCollidesCalendar();
-		int weatherConflictsCount = isScheduleCollidesWeather();
-		double behindHrsCount = isProgressBehindSchedule();
+	public ArrayList<String> isConflicting() {
+		// boolean result = false;
+		ArrayList<String> conflictIds = new ArrayList<String> ();
+		ArrayList<String> calConflictIds = isScheduleCollidesCalendar();
+		ArrayList<String> wthConflictIds = isScheduleCollidesWeather();
+		int calConflictsCount = calConflictIds.size();
+		int wthConflictsCount = wthConflictIds.size();
 		
-		if(calendarConflictsCount > 0) {
+		/*
+		if(calConflictsCount > 0) {
 			result = true;
-			stats += Integer.toString(calendarConflictsCount) + " conflicts with calendar.\n";
+			stats += Integer.toString(calConflictsCount) + " conflicts with calendar.\n";
 		}
-		if(weatherConflictsCount > 0) {
+		if(wthConflictsCount > 0) {
 			result = true;
-			stats += Integer.toString(weatherConflictsCount) + " conflicts with weather.\n";
+			stats += Integer.toString(wthConflictsCount) + " conflicts with weather.\n";
 		}
-		if(behindHrsCount > 0) {
-			result = true;
-			stats += Double.toString(behindHrsCount) + " hours behind the schedule.\n";
-		}
+		*/
 		
-		if(result) {
-			stats += "We suggest you reschedule your exercise plan.";
+		// generate a ArrayList of unique Ids of conflicting schedule
+		if(calConflictsCount > 0 || wthConflictsCount > 0) {
+			//stats += "We suggest you reschedule your exercise plan.";
 			
+			conflictIds.addAll(wthConflictIds);
+			for (int i = 0; i < calConflictIds.size(); i++) {
+				String calId = calConflictIds.get(i);
+				if (!wthConflictIds.contains(calId)) {
+					conflictIds.add(calId);					
+				}
+			}
+			
+			/*
 			// generate dialog to ask user if re-computation is needed
 			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
 			// set title
@@ -243,8 +252,9 @@ public class Schedule extends Activity implements LocationListener {
 			AlertDialog alertDialog = alertDialogBuilder.create(); 
 			// show alert dialog
 			alertDialog.show();
+			*/
 		}		
-		return result;
+		return conflictIds;
 	}
 	
 	public void computeSchedule() {
@@ -271,9 +281,9 @@ public class Schedule extends Activity implements LocationListener {
 		if (cursor.moveToFirst()) {
 			while(!cursor.isAfterLast())
 			{	
-				String date = cursor.getString(0);
-				String start = cursor.getString(1);
-				String end = cursor.getString(2);
+				String date = cursor.getString(1);
+				String start = cursor.getString(2);
+				String end = cursor.getString(3);
 				cursor.moveToNext();
 				try {
 					Date entryDate = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(date);					
