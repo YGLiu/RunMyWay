@@ -48,6 +48,9 @@ public class PersonalData extends Activity implements LocationListener{
 		String query = "SELECT * FROM " + DBI.tableUser;
 		Cursor cursor = DBI.select(query);
 		
+		// debugging purpose
+		Log.d("# rows", Integer.toString(cursor.getCount()));
+		
 		EditText nameEditText = (EditText) findViewById(R.id.editTextUserName);
 		RadioGroup genderRadioGrp = (RadioGroup) findViewById(R.id.radioGroupGender);
 		EditText heightEditText = (EditText) findViewById(R.id.editTextHeight);
