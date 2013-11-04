@@ -40,7 +40,7 @@ import android.widget.Button;
 import android.widget.TabHost;
 import android.widget.TextView;
 
-public class Sensor extends Activity implements SensorListener,LocationListener{
+public class Sensor extends Activity implements LocationListener{
 	/** Called when the activity is first created. */
 	private long mlCount = 0;
 	private long mlTimerUnit = 100;
@@ -76,17 +76,6 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 	private LatLng sessionPrevPos;
 	private LatLng sessionCurrPos;
 	// End of variable needed for map and database
-	
-	
-	SensorManager sm = null;
-	
-	TextView xViewA = null;
-	TextView yViewA = null;
-	TextView zViewA = null;
-	TextView xViewO = null;
-	TextView yViewO = null;
-	TextView zViewO = null;
-	TextView CheckStatusView = null;
 	TextView stepView 	= null;
 	TextView startView = null;
 	TextView endView = null;
@@ -104,18 +93,8 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 		// Show the Up button in the action bar.
 		setupActionBar();
 		
-		sm = (SensorManager) getSystemService(SENSOR_SERVICE);
-		xViewA = (TextView) findViewById(R.id.xbox);
-        yViewA = (TextView) findViewById(R.id.ybox);
-        zViewA = (TextView) findViewById(R.id.zbox);
-        xViewO = (TextView) findViewById(R.id.xboxo);
-        yViewO = (TextView) findViewById(R.id.yboxo);
-        zViewO = (TextView) findViewById(R.id.zboxo);
-        stepView = (TextView) findViewById(R.id.step);
         startView = (TextView) findViewById(R.id.startTime);
-        endView = (TextView) findViewById(R.id.endTime);
-        //CheckStatusView = (TextView) findViewById(R.id.check_status);
-        
+        endView = (TextView) findViewById(R.id.endTime);   
         
         tvTime = (TextView)findViewById(R.id.tvTime);
         btnStartPause = (Button)findViewById(R.id.btnStartPaunse);
@@ -181,14 +160,7 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
         spec.setContent(R.id.tab1); 
         spec.setIndicator("Timer"); 
         tabs.addTab(spec); 
-        spec=tabs.newTabSpec("tag2"); 
-        spec.setContent(R.id.tab2); 
-        spec.setIndicator("Sensor"); 
-        tabs.addTab(spec); 
-        spec=tabs.newTabSpec("tag3"); 
-        spec.setContent(R.id.tab3); 
-        spec.setIndicator("Walking steps"); 
-        tabs.addTab(spec);
+
         spec=tabs.newTabSpec("tag4"); 
         spec.setContent(R.id.tab4); 
         spec.setIndicator("Map"); 
@@ -211,59 +183,6 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 		//End of On create functions called for map and database
 
 	}
-	 public void onSensorChanged(int sensor, float[] values) {
-	        synchronized (this) {
-	            Log.d(tag, "onSensorChanged: " + sensor + ", x: " + values[0] + ", y: " + values[1] + ", z: " + values[2]);
-	            if (sensor == SensorManager.SENSOR_ORIENTATION) {
-		            xViewO.setText("Orientation X: " + values[0]);
-		            yViewO.setText("Orientation Y: " + values[1]);
-		            zViewO.setText("Orientation Z: " + values[2]);
-		            
-	            }
-	            if (sensor == SensorManager.SENSOR_ACCELEROMETER) {
-		            xViewA.setText("Accel X: " + values[0]);
-		            yViewA.setText("Accel Y: " + values[1]);
-		            zViewA.setText("Accel Z: " + values[2]);
-		            if (values[2] < -11 || values[2] >11)
-		            {
-		            	stepCount++;
-		            }
-		            // (values[2] >-9 & values[2] < 9 ) |
-		            /*if(values[0]>3 || values[1]>3 || values[0]<-3 || values[1]<-3)
-		            {
-		            	CheckStatusView.setBackgroundColor(0x0000FF00);
-		            	CheckStatusView.setText("In train");
-		            }
-		            else 
-		            {
-		            	CheckStatusView.setBackgroundColor(0x00FF0000);
-		            	CheckStatusView.setText("In station");
-		            }*/
-	            }          
-	            stepView.setText("Number: " + stepCount);
-	        }
-	    }
-	    
-	    public void onAccuracyChanged(int sensor, int accuracy) {
-	    	Log.d(tag,"onAccuracyChanged: " + sensor + ", accuracy: " + accuracy);
-	        
-	    }
-	 
-
-	    @Override
-	    protected void onResume() {
-	        super.onResume();
-	        sm.registerListener(this, 
-	                SensorManager.SENSOR_ORIENTATION |
-	        		SensorManager.SENSOR_ACCELEROMETER,
-	                SensorManager.SENSOR_DELAY_NORMAL);
-	    }
-	    
-	    @Override
-	    protected void onStop() {
-	        sm.unregisterListener(this);
-	        super.onStop();
-	    } 
 	/**
 	 * Set up the {@link android.app.ActionBar}.
 	 */
