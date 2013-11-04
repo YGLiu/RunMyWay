@@ -8,8 +8,8 @@ public class Sql extends SQLiteOpenHelper {
 
   private static final String DATABASE_NAME = "RunMyWay.db";
   private static final int DATABASE_VERSION = 1;
-  // Database creation sql statement
-  private static final String CreateTableUser = "create table User(UID text, Gender text, Height real, Weight real, Birthday text, Target text);";
+  // Database creation SQL statement
+  private static final String CreateTableUser = "create table User(UID text, Gender text, Height real, Weight real, Birthday text, Target text, Longtitude real DEFAULT 0, Latitude real DEFAULT 0);";
   private static final String CreateTableHistory = "create table History(Date text, Start text, End text, Duration real, Distance real, AveSpeed real);";
   private static final String CreateTableSession = "create table Session(SeqNum int, Lat real, Lng real);";
   private static final String CreateTableCalendar = "create table Calendar(Date text, Start text, End text);";

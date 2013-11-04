@@ -93,10 +93,17 @@
         android:text="@string/GoogleLogin" />
 
     <Button
+        android:id="@+id/buttonUpdateHomeLocation"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/update_home_location"
+        android:onClick="clickUpdateHomeLocButton" />
+
+    <Button
         android:id="@+id/buttonSave"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:onClick="savePersonalDataInDB"
+        android:onClick="clickSaveButton"
         android:text="@string/Save_Button" />
 
 </LinearLayout>
