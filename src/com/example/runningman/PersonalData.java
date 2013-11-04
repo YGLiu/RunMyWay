@@ -201,7 +201,6 @@ public class PersonalData extends Activity implements LocationListener{
 			cv.put("Weight", weight);
 			cv.put("Birthday", bday);
 			cv.put("Target", target);
-			showAlert("Notification", "Personal data updated.");
 			
 			String query = "SELECT * FROM " + DBI.tableUser;
 			Cursor cursor = DBI.select(query);
@@ -213,6 +212,7 @@ public class PersonalData extends Activity implements LocationListener{
 			else {
 				DBI.insert(DBI.tableUser, cv);
 			}
+			showAlert("Notification", "Personal data updated.");
 			// load the database again and check availability of home address
 			this.loadPersonalDataFromDB();
 		}
@@ -259,17 +259,18 @@ public class PersonalData extends Activity implements LocationListener{
 		ContentValues cv = new ContentValues();
 		cv.put("Longtitude", this.Lng);
 		cv.put("Latitude", this.Lat);
-		showAlert("Notification", "Home location updated.");
 		
 		String query = "SELECT * FROM " + DBI.tableUser;
 		Cursor cursor = DBI.select(query);
 		// if table is not empty, update it
 		if (cursor.getCount() != 0) {
 			DBI.update(DBI.tableUser, cv, null);
+			showAlert("Notification", "Home location updated.");
 		}
 		// if table is empty, insert home location
 		else {
-			DBI.insert(DBI.tableUser, cv);
+			// DBI.insert(DBI.tableUser, cv);
+			showAlert("Alert", "Personal Data cannot be left empty.");
 		}
 	}
 	
