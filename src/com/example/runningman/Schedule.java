@@ -122,7 +122,7 @@ public class Schedule extends Activity implements LocationListener {
 	public ArrayList<String> isScheduleCollidesWeather() {
 		ArrayList<String> conflictIdList = new ArrayList<String>();
 		Cursor scheduleCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
-		
+		String weatherText;
 		// if exist at least one event
 		if (scheduleCursor.moveToFirst()) {
 			while(!scheduleCursor.isAfterLast()) {
@@ -131,12 +131,13 @@ public class Schedule extends Activity implements LocationListener {
 				// select events from Weather which have the same date
 				String query = "SELECT * FROM " + DBI.tableWeather + " WHERE Date='" + scheduleDate + "'";			
 				Cursor weatherCursor = DBI.select(query);
-				String weatherText = weatherCursor.getString(1);
+				if(weatherCursor.moveToFirst())
+				{	weatherText = weatherCursor.getString(1);
 				// if poor weather condition, increment count by 1
-				if (weather.isWeatherPoorCondition(weatherText)) {
-					conflictIdList.add(schId);
+					if (weather.isWeatherPoorCondition(weatherText))
+						conflictIdList.add(schId);
 				}
-				weatherCursor.moveToNext();
+				scheduleCursor.moveToNext();
 			}
 		}
 		return conflictIdList;
@@ -263,10 +264,9 @@ public class Schedule extends Activity implements LocationListener {
 		* Insert algorithm here
 		* Assigned to: Liu Yaguang
 		*/
-		
+		ArrayList<String> conflictItems = isConflicting();
 		// this should be the last step of this method
 		// display the new schedule
-		displaySchedule();
 	}
 	
 	private void displaySchedule() {
