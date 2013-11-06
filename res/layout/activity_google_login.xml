@@ -8,25 +8,6 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".GoogleLogin" >
-
-    <EditText
-        android:id="@+id/editTextAuthCode"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/AuthCode"
-        android:inputType="textEmailAddress" />
 		<requestFocus />
-
-    <Button
-        android:id="@+id/buttonConnectGoogle"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/Connect_Button" />
-
-    <ListView
-        android:id="@+id/listViewCalendar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
 
 </LinearLayout>

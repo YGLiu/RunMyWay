@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -56,6 +55,9 @@ public class Schedule extends Activity implements LocationListener {
         	Toast.makeText(getApplicationContext(), "Network connection is unavailable!!", Toast.LENGTH_SHORT).show();
         	return;
         }
+		
+		// debugging purpose
+		DBI.verboseCalendarTable();
 		
 		// initiate Weather table
 		weather = new Weather(getApplicationContext());
@@ -133,7 +135,7 @@ public class Schedule extends Activity implements LocationListener {
 				Cursor weatherCursor = DBI.select(query);
 				if(weatherCursor.moveToFirst())
 				{	weatherText = weatherCursor.getString(1);
-				// if poor weather condition, increment count by 1
+					// if poor weather condition, push the Id into the list
 					if (weather.isWeatherPoorCondition(weatherText))
 						conflictIdList.add(schId);
 				}
@@ -279,8 +281,7 @@ public class Schedule extends Activity implements LocationListener {
 		
 		// if Schedule table is not empty
 		if (cursor.moveToFirst()) {
-			while(!cursor.isAfterLast())
-			{	
+			while(!cursor.isAfterLast()) {
 				String date = cursor.getString(1);
 				String start = cursor.getString(2);
 				String end = cursor.getString(3);

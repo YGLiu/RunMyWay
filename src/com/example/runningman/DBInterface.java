@@ -3,6 +3,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 public class DBInterface{
 
@@ -36,5 +37,23 @@ public class DBInterface{
   public int update(String table,ContentValues CV, String whereClause)
   {	
   		return database.update(table,CV,whereClause,null);
+  }
+  
+  public void verboseCalendarTable() {
+	  String query = "SELECT * FROM " + this.tableCalendar;
+	  Cursor csr = this.select(query);
+	  if (csr.moveToFirst()) {
+		  while(!csr.isAfterLast()) {
+			  String date = csr.getString(0);
+			  String start = csr.getString(1);
+			  String end = csr.getString(2);
+			  String line = date + " " + start + " " + end;
+			  Log.v(Integer.toString(csr.getPosition()), line);
+			  csr.moveToNext();
+		  }
+	  }
+	  else {
+		  Log.v("[empty table]", "Empty Calendar Table.");
+	  }
   }
 } 

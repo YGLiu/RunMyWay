@@ -8,30 +8,26 @@
 package com.example.runningman;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ContentValues;
-import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
+import android.webkit.CookieSyncManager;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 // Google API libraries
 import com.google.api.client.auth.oauth2.Credential;
@@ -57,28 +53,56 @@ import com.google.api.services.calendar.model.Events;
 public class GoogleLogin extends Activity {
 	
 	private DBInterface DBI;
+	private GoogleAuthorizationCodeFlow flow;
 	private CalendarList calendarList;
 	private Calendar calendarService;
 
-	@SuppressLint("NewApi")
+	@SuppressLint({ "SetJavaScriptEnabled", "JavascriptInterface" })
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_google_login);
-		// Show the Up button in the action bar.
+		// Show the Up button in the action bar
 		setupActionBar();
 		// initialization of database interface
 		DBI = new DBInterface(this);
+
+		final WebView webview = new WebView(this);
 		
-		// disable Strict Mode and allow networking tasks on main thread
-		if (android.os.Build.VERSION.SDK_INT > 9) {
-			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-			StrictMode.setThreadPolicy(policy);
-		}
-		
-		// try google calendar API login
 		try {
-			connectGoogleCalendar();
+			String url = this.getGoogleAuthRedirUrl();
+			webview.setWebChromeClient(new WebChromeClient() {
+				public void onProgressChanged(WebView view, int progress) {
+					// Activities and WebViews measure progress with different scales.
+					// The progress meter will automatically disappear when we reach 100%
+					setProgress(progress * 1000);
+				}
+			});
+			
+			webview.getSettings().setJavaScriptEnabled(true);
+			webview.addJavascriptInterface(new JsInterface(this), "authCodeGetter");
+			webview.loadUrl(url);
+			setContentView(webview);
+			
+			webview.setWebViewClient(new WebViewClient() {
+				@Override
+				public void onPageFinished(WebView view, String url) {
+					CookieSyncManager.getInstance().sync();
+					// Get the cookie from cookie jar.
+					String title = view.getTitle();
+									
+					String[] parts = title.split("=");
+					if (parts[0].equalsIgnoreCase("Success code")) {
+					    String jsCmd = "javascript:window.authCodeGetter.getAuthCodeFromHTML" +
+					    		"(document.getElementById('code').value);";
+					    Log.d("[command]", jsCmd);
+					    webview.loadUrl(jsCmd);
+					    GoogleLogin.this.finish();
+					}
+				}
+			});
+			// terminate the activity
+			// finish();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -117,10 +141,27 @@ public class GoogleLogin extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	 
+	class JsInterface {
+		private Context ctx;
+		// constructor
+		JsInterface(Context ctx) {
+			this.ctx = ctx;
+		}
+		
+		@JavascriptInterface
+		public void getAuthCodeFromHTML(String data) {
+			String authCode = data;
+			Log.d("HTML", authCode);
+			getCalendarFeed(authCode);
+		    storeCalendarDB();
+		    DBI.verboseCalendarTable();
+		}
+	}
 	
 	// sync with a google account
 	// return a list of calendars of the user
-	public void connectGoogleCalendar() throws IOException {
+	public String getGoogleAuthRedirUrl() throws IOException {
 		final HttpTransport httpTransport = new NetHttpTransport();
 		final JacksonFactory jsonFactory = new JacksonFactory();
 		
@@ -137,68 +178,63 @@ public class GoogleLogin extends Activity {
 	    		httpTransport, jsonFactory, clientId, clientSecret, Arrays.asList(CalendarScopes.CALENDAR)).setAccessType("online")
 	    		.setApprovalPrompt("auto").build();
 	    String url = flow.newAuthorizationUrl().setRedirectUri(redirectUrl).build();
-	    
-	    // open the URL in browser
-		Intent browser = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-		startActivity(browser);
-		
-	    // click on the button
-		// exchange authentication code for token
-		Button connectGoogleButton = (Button) findViewById(R.id.buttonConnectGoogle);
-	    final EditText authCodeEditText = (EditText) findViewById(R.id.editTextAuthCode);
-
-	    connectGoogleButton.setOnClickListener(new View.OnClickListener(){
-            public void onClick(View view)
-            {
-                String code = authCodeEditText.getText().toString();
-                Log.d("Auth code", code);
-                
-        		try {
-        			// get response token
-        			GoogleTokenResponse response = flow.newTokenRequest(code).setRedirectUri(redirectUrl).execute();       			
-        			// Credential Builder
-        			GoogleCredential credential = new GoogleCredential.Builder()
-        		    .setTransport(new NetHttpTransport())
-        		    .setJsonFactory(new JacksonFactory())
-        		    .setClientSecrets(clientId, clientSecret)
-        		    .addRefreshListener(new CredentialRefreshListener() {
-        		    	@Override
-        		    	public void onTokenResponse(Credential credential, TokenResponse tokenResponse) {
-					        // Handle success.
-					        Log.d("Success:","Credential was refreshed successfully.");
-        		    	}
-        		    	@Override
-        		    	public void onTokenErrorResponse(Credential credential, TokenErrorResponse tokenErrorResponse) {
-					        // Handle error.
-					        Log.d("Error:", "Credential was not refreshed successfully. "
-					            + "Redirect to error page or login screen.");
-        		    	}
-				    })
-        		    .build();
-        			credential.setFromTokenResponse(response);
-        			
-        			// set up calendar instance
-        			// applicationName is compulsory
-        			Calendar service = new Calendar.Builder(httpTransport, jsonFactory, credential).
-        					setApplicationName("com.example.runningman").build();
-        			CalendarList feed = service.calendarList().list().execute();
-        			
-        			// set values to class variables
-        			calendarService = service;
-        			calendarList = feed;
-        			storeCalendarDB();
-        			displayCalendarDB();
-        		} catch (IOException e){
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					calendarService = null;
-					calendarList = null;
-				}
-            }
-	        });
+	    this.flow = flow;
+	    return url;
 	}
 	
-	private void storeCalendarDB() throws IOException{
+	private void getCalendarFeed(String authCode) {
+		final HttpTransport httpTransport = new NetHttpTransport();
+		final JacksonFactory jsonFactory = new JacksonFactory();
+		
+		// The clientId and clientSecret can be found in Google Cloud Console
+		// TODO store the parameters in database instead of hard code
+	    final String clientId = "557655694825-7v50n300c4r1grmh2jgpv5iook0n00ki.apps.googleusercontent.com";
+	    final String clientSecret = "_VsFRNBgKsOLevgPZSM1RsU2";
+
+	    // your redirect URL for web based applications.
+	    final String redirectUrl = "urn:ietf:wg:oauth:2.0:oob";
+		
+		try {
+	    // get response token
+		GoogleTokenResponse response = this.flow.newTokenRequest(authCode).setRedirectUri(redirectUrl).execute();       			
+		// Credential Builder
+		GoogleCredential credential = new GoogleCredential.Builder()
+	    .setTransport(new NetHttpTransport())
+	    .setJsonFactory(new JacksonFactory())
+	    .setClientSecrets(clientId, clientSecret)
+	    .addRefreshListener(new CredentialRefreshListener() {
+	    	@Override
+	    	public void onTokenResponse(Credential credential, TokenResponse tokenResponse) {
+		        // Handle success.
+		        Log.d("Success:","Credential was refreshed successfully.");
+	    	}
+	    	@Override
+	    	public void onTokenErrorResponse(Credential credential, TokenErrorResponse tokenErrorResponse) {
+		        // Handle error.
+		        Log.d("Error:", "Credential was not refreshed successfully. "
+		            + "Redirect to error page or login screen.");
+	    	}
+	    })
+	    .build();
+		credential.setFromTokenResponse(response);
+		
+		// set up calendar instance
+		// applicationName is compulsory
+		Calendar service = new Calendar.Builder(httpTransport, jsonFactory, credential).
+				setApplicationName("com.example.runningman").build();
+		CalendarList feed = service.calendarList().list().execute();
+		
+		// set values to class variables
+		this.calendarService = service;
+		this.calendarList = feed;
+		} catch (IOException e) {
+			e.printStackTrace();
+			this.calendarService = null;
+			this.calendarList = null;
+		}
+	}
+	
+	private void storeCalendarDB() {
 		// clear the entire calendar table
 		DBI.delete(DBI.tableCalendar, null);
 		// traverse every event in a calendar
@@ -207,45 +243,50 @@ public class GoogleLogin extends Activity {
 			// set the current time date
 			DateTime currDateTime = new DateTime(new Date());			
 			// retrieve events only from today onwards
-			Events events = calendarService.events().list(entry.getId()).setTimeMin(currDateTime).execute();
 			
-			// for debugging purpose
-			// traverse through all events in a calendar
-			for (Event event : events.getItems()) {
-				ContentValues cv = null;
-				EventDateTime start,end;
-				start = event.getStart();
-				end = event.getEnd();
-				// to avoid nullPointerException
-				if (start != null) {
-					DateTime startDateTime = start.getDateTime();
-					// non-full-day event
-					if (startDateTime != null) {
-						String startDateTimeString = startDateTime.toString();
-						Log.d("Start Time",startDateTimeString);
-						// construct content value
-						cv = new ContentValues();
-						cv.put("Date", startDateTimeString.substring(0, 10).toString());
-						cv.put("Start", startDateTimeString.substring(11, 19));
+			try {
+				Events events = calendarService.events().list(entry.getId()).setTimeMin(currDateTime).execute();
+				// traverse through all events in a calendar
+				for (Event event : events.getItems()) {
+					ContentValues cv = null;
+					EventDateTime start,end;
+					start = event.getStart();
+					end = event.getEnd();
+					// to avoid nullPointerException
+					if (start != null) {
+						DateTime startDateTime = start.getDateTime();
+						// non-full-day event
+						if (startDateTime != null) {
+							String startDateTimeString = startDateTime.toString();
+							Log.d("Start Time",startDateTimeString);
+							// construct content value
+							cv = new ContentValues();
+							cv.put("Date", startDateTimeString.substring(0, 10).toString());
+							cv.put("Start", startDateTimeString.substring(11, 19));
+						}
+					}
+					if (end != null) {
+						DateTime endDateTime = end.getDateTime();
+						// non-full-day event
+						if (endDateTime != null){
+							String endDateTimeString = endDateTime.toString();
+							Log.d("End Time", endDateTimeString);
+							cv.put("End", endDateTimeString.substring(11, 19));
+						}
+					}				
+					// content value might be a null value
+					if (cv != null){
+						DBI.insert(DBI.tableCalendar, cv);
 					}
 				}
-				if (end != null) {
-					DateTime endDateTime = end.getDateTime();
-					// non-full-day event
-					if (endDateTime != null){
-						String endDateTimeString = endDateTime.toString();
-						Log.d("Start Time", endDateTimeString);
-						cv.put("End", endDateTimeString.substring(11, 19));
-					}
-				}				
-				// content value might be a null value
-				if (cv != null){
-					DBI.insert(DBI.tableCalendar, cv);
-				}
+			Toast.makeText(getApplicationContext(), "Calendar Updated", Toast.LENGTH_SHORT).show();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
-	
+	/*
 	private void displayCalendarDB(){
 		List<String> listValues = new ArrayList<String>();
 		String query = "SELECT * FROM " + DBI.tableCalendar + " ORDER BY Date ASC";
@@ -266,4 +307,5 @@ public class GoogleLogin extends Activity {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listValues);
 		listview.setAdapter(adapter);
 	}
+	*/
 }
