@@ -7,8 +7,9 @@ course of CS4274 (Multimedia and Mobile Networking).
 
 ### Setup
 
-Include the External JAR files into libraries of build path and export them in the order below. 
-All the Google API files are put inside libs\_calendar folder.
+Include the External JAR files into libraries of Build Path and export them in the order below.
+The order is to ensure the dependencies among the libraries.
+All the Google API files are inside **libs\_calendar** folder.
 
 * google-api-client-1.17.0-rc.jar
 * google-api-client-android-1.17.0-rc.jar
@@ -25,7 +26,8 @@ All the Google API files are put inside libs\_calendar folder.
 
 Right click the following two folders in the Package Explorer, 
 select "Properties" and check the "Is Library" option. 
-Then select "Properties" of the project, then choose "Android". 
+Then select "Properties" of the project and
+choose "Android".
 Set the API version to 4.3 and add these two folders into the project as libraries:
 
 * google-play-services\_lib
