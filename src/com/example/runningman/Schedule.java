@@ -57,7 +57,7 @@ public class Schedule extends Activity implements LocationListener {
         }
 		
 		// debugging purpose
-		DBI.verboseCalendarTable();
+		DBI.verboseTable(DBI.tableCalendar);
 		
 		// initiate Weather table
 		weather = new Weather(getApplicationContext());

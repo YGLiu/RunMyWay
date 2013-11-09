@@ -155,7 +155,7 @@ public class GoogleLogin extends Activity {
 			Log.d("HTML", authCode);
 			getCalendarFeed(authCode);
 		    storeCalendarDB();
-		    DBI.verboseCalendarTable();
+		    DBI.verboseTable(DBI.tableCalendar);
 		}
 	}
 	
