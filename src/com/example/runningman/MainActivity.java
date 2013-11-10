@@ -14,6 +14,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);    
         Button GoogleLogin = (Button) findViewById(R.id.buttonGoogleLogin);
+        // generate dummy history records
+        DBInterface DBI = new DBInterface(this);
+        DBI.dummyHistory(true);
+        
         GoogleLogin.setOnClickListener(new View.OnClickListener(){
 			@Override
 			public void onClick(View v) {
@@ -30,9 +34,6 @@ public class MainActivity extends Activity {
 		    	startActivity(intent);
 			}
         });
-        
-        DBInterface DBI = new DBInterface(this);
-        DBI.dummyHistory(true);
     }
     
     @Override
