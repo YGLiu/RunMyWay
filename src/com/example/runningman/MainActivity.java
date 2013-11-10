@@ -30,6 +30,9 @@ public class MainActivity extends Activity {
 		    	startActivity(intent);
 			}
         });
+        
+        DBInterface DBI = new DBInterface(this);
+        DBI.dummyHistory(true);
     }
     
     @Override
