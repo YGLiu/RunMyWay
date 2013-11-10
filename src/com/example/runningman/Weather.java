@@ -2,27 +2,13 @@ package com.example.runningman;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.weather.tools.AsciiUtils;
-import com.example.weather.tools.ImageUtils;
-import com.example.weather.tools.NetworkUtils;
 import com.example.weather.utils.YahooWeather4a.WeatherInfo;
 import com.example.weather.utils.YahooWeather4a.WeatherInfo.ForecastInfo;
 import com.example.weather.utils.YahooWeather4a.YahooWeatherInfoListener;

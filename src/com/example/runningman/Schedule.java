@@ -43,7 +43,7 @@ public class Schedule extends Activity {
 		setContentView(R.layout.activity_schedule);
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		DBI = new DBInterface(this);
-		
+		DBI.verboseTable(DBI.tableSchedule);
 		// check network availability
 		if (!NetworkUtils.isConnected(getApplicationContext())) {
         	Toast.makeText(getApplicationContext(), "Network connection is unavailable!!", Toast.LENGTH_SHORT).show();
@@ -145,26 +145,22 @@ public class Schedule extends Activity {
 			{	if((new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(1) + cursor.getString(2))).after(curr))
 				{	ContentValues CV = new ContentValues();
 					if(isConflict(cursor.getInt(0)))
-					{	
-						CV.put("Status", "CONFLICT");
+					{	CV.put("Status", "CONFLICT");
 						DBI.update(DBI.tableSchedule, CV, "Id = '" + cursor.getInt(0) + "'");
 					}
 					else
-					{	
-						CV.put("Status", "UPCOMING");
+					{	CV.put("Status", "UPCOMING");
 						DBI.update(DBI.tableSchedule, CV, "Id = '" + cursor.getInt(0) + "'");
 					}
 				}
 				else
 				{	ContentValues CV = new ContentValues();
 					if(IsDone(cursor.getInt(0)))
-					{	
-						CV.put("Status", "PASSED");
+					{	CV.put("Status", "PASSED");
 						DBI.update(DBI.tableSchedule, CV, "Id = '" + cursor.getInt(0) + "'");
 					}
 					else
-					{	
-						CV.put("Status", "CONFLICT");
+					{	CV.put("Status", "CONFLICT");
 						DBI.update(DBI.tableSchedule, CV, "Id = '" + cursor.getInt(0) + "'");
 					}
 				}
@@ -186,7 +182,8 @@ public class Schedule extends Activity {
 				Integer.toString(ID) + "'");
 		
 		// if the Schedule entry is found
-		if (scheduleCursor.moveToFirst()) {
+		if (scheduleCursor.moveToFirst()) 
+		{
 			String scheduleDate = scheduleCursor.getString(1);				
 			// select events from calendar which have the same date
 			String calQuery = "SELECT * FROM " + DBI.tableCalendar + " WHERE Date='" + scheduleDate + "'";			
@@ -196,11 +193,13 @@ public class Schedule extends Activity {
 			Cursor weatherCursor = DBI.select(wthQuery);
 			
 			// check conflicts with calendar
-			if (calendarCursor.moveToFirst()) {
-				while(!calendarCursor.isAfterLast()) {					
-					String calStart = calendarCursor.getString(2);
+			if (calendarCursor.moveToFirst()) 
+			{
+				while(!calendarCursor.isAfterLast()) 
+				{					
+					String calStart = calendarCursor.getString(1);
 					String schStart = scheduleCursor.getString(2);
-					String calEnd = calendarCursor.getString(3);
+					String calEnd = calendarCursor.getString(2);
 					String schEnd = scheduleCursor.getString(3);
 					
 					try {
@@ -238,7 +237,7 @@ public class Schedule extends Activity {
 	}
 	public boolean IsDone(int ID)
 	{
-		Cursor cursor = DBI.select("SELECT * FROM " + DBI.tableSchedule + "WHERE ID = '" + ID + "'");
+		Cursor cursor = DBI.select("SELECT * FROM " + DBI.tableSchedule + " WHERE Id = '" + Integer.toString(ID) + "'");
 		cursor.moveToFirst();
 		String date = cursor.getString(1);
 		String start = cursor.getString(2);
@@ -248,7 +247,7 @@ public class Schedule extends Activity {
 			SimpleDateFormat parser = new SimpleDateFormat ("HH:mm:ss", Locale.US);
 			Date calStart = parser.parse(start);
 			Date calEnd = parser.parse(end);
-			cursor = DBI.select("SELECT * FROM " + DBI.tableHistory + "WHERE Date = '" + date + "'");
+			cursor = DBI.select("SELECT * FROM " + DBI.tableHistory + " WHERE Date = '" + date + "'");
 			cursor.moveToFirst();
 			while(!cursor.isAfterLast())
 			{	historyStart = cursor.getString(1);

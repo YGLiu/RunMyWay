@@ -43,7 +43,7 @@
 				    <TextView
 				        android:layout_width="wrap_content"
 				        android:layout_height="wrap_content"
-				        android:text=" " />
+				        android:text="@string/Space" />
 				
 				    <LinearLayout
 				        android:layout_width="fill_parent"
@@ -55,19 +55,19 @@
 				            android:id="@+id/btnStartPaunse"
 				            android:layout_width="wrap_content"
 				            android:layout_height="wrap_content"
-				            android:text="Start"
+				            android:text="@string/start"
 				            android:textSize="20sp" />
 				
 				        <TextView
 				            android:layout_width="wrap_content"
 				            android:layout_height="wrap_content"
-				            android:text="    " />
+				            android:text="@string/fourspaces" />
 				
 				        <Button
 				            android:id="@+id/btnStop"
 				            android:layout_width="wrap_content"
 				            android:layout_height="wrap_content"
-				            android:text="Stop"
+				            android:text="@string/stop"
 				            android:textSize="20sp" />
 				    </LinearLayout>
 				
@@ -75,13 +75,13 @@
 				        android:id="@+id/startTime"
 				        android:layout_width="fill_parent"
 				        android:layout_height="wrap_content"
-				        android:text="Start Time: " />
+				        android:text="@string/startTime" />
 				
 				    <TextView
 				        android:id="@+id/endTime"
 				        android:layout_width="fill_parent"
 				        android:layout_height="wrap_content"
-				        android:text="Stop Time: " />
+				        android:text="@string/stopTime" />
 				    
 				    <TextView
 				        android:id="@+id/AveSpeed"
@@ -106,7 +106,7 @@
 				            android:layout_alignParentLeft="true"
 				            android:layout_alignParentRight="true"
 				            android:onClick="personalData"
-				            android:text="Personal Data" />
+				            android:text="@string/PersonalDataIcon" />
 
 				        <Button
 				            android:id="@+id/History"
@@ -116,7 +116,7 @@
 				            android:layout_alignParentLeft="true"
 				            android:layout_alignParentRight="true"
 				            android:onClick="history"
-				            android:text="History" />
+				            android:text="@string/HistoryIcon" />
 
 				        <Button
 				            android:id="@+id/Schedule"
@@ -126,7 +126,7 @@
 				            android:layout_alignParentLeft="true"
 				            android:layout_alignParentRight="true"
 				            android:onClick="schedule"
-				            android:text="Schedule" />
+				            android:text="@string/ScheduleIcon" />
 
 				    </RelativeLayout>
 				                

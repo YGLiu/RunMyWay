@@ -4,6 +4,7 @@ package com.example.runningman;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,7 +22,7 @@ public class MainActivity extends Activity {
         // generate dummy history records
         DBInterface DBI = new DBInterface(this);
         DBI.dummyHistory(true);
-        
+        //dummyschedule();
         GoogleLogin.setOnClickListener(new View.OnClickListener(){
 			@Override
 			public void onClick(View v) {
@@ -53,8 +54,6 @@ public class MainActivity extends Activity {
 			        alarms = (AlarmManager) getSystemService(ALARM_SERVICE);
 			        alarms.set(AlarmManager.RTC, System.currentTimeMillis() + 5000, alarmIntent);
 			        Log.d("mainactivity", System.currentTimeMillis() + " ");
-				//Intent intent = new Intent(getApplicationContext(), MainPage.class);
-		    	//startActivity(intent);
 			}
         });
         
@@ -69,6 +68,30 @@ public class MainActivity extends Activity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-    
+    public void dummyschedule()
+    {	DBInterface DBI = new DBInterface(this);
+    	ContentValues CV = new ContentValues();
+    	CV.put("Date", "2014-01-01");
+    	CV.put("Start", "08:00:00");
+    	CV.put("End", "10:00:00");
+    	DBI.insert(DBI.tableCalendar, CV);
+    	CV = new ContentValues();
+    	CV.put("Date", "2014-01-01");
+    	CV.put("Start", "08:00:00");
+    	CV.put("End", "10:00:00");
+    	CV.put("Status", "UPCOMING");
+    	DBI.insert(DBI.tableSchedule, CV);
+    	CV = new ContentValues();
+    	CV.put("Date", "2012-01-01");
+    	CV.put("Start", "08:00:00");
+    	CV.put("End", "10:00:00");
+    	DBI.insert(DBI.tableCalendar, CV);
+    	CV = new ContentValues();
+    	CV.put("Date", "2012-01-01");
+    	CV.put("Start", "08:00:00");
+    	CV.put("End", "10:00:00");
+    	CV.put("Status", "UPCOMING");
+    	DBI.insert(DBI.tableSchedule, CV);
+    }
     
 }
