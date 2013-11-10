@@ -87,7 +87,7 @@ public class MainPage extends Activity implements LocationListener{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_sensor);
+		setContentView(R.layout.activity_main_page);
 		
         startView = (TextView) findViewById(R.id.startTime);
         endView = (TextView) findViewById(R.id.endTime);   
