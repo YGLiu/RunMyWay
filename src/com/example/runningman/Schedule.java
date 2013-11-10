@@ -115,7 +115,9 @@ public class Schedule extends Activity {
 		}	
 	}
 	public void Compute()
-	{}
+	{
+		
+	}
 	public void Recompute()
 	{}
 	public boolean gotConflictEvents()
@@ -142,7 +144,7 @@ public class Schedule extends Activity {
 			while(!cursor.isAfterLast())
 			{	if((new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(1) + cursor.getString(2))).after(curr))
 				{	ContentValues CV = new ContentValues();
-					if(Isconflict(cursor.getInt(0)))
+					if(isConflict(cursor.getInt(0)))
 					{	
 						CV.put("Status", "CONFLICT");
 						DBI.update(DBI.tableSchedule, CV, "Id = '" + cursor.getInt(0) + "'");
@@ -176,13 +178,66 @@ public class Schedule extends Activity {
 		catch(Exception e)
 		{	e.printStackTrace();}
 	}
-	public boolean Isconflict(int ID)
+	
+	// tell if a schedule ID has conflict with Schedule and Weather
+	public boolean isConflict(int ID)
 	{
-		return true;
+		Cursor scheduleCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule + " WHERE ID='" +
+				Integer.toString(ID) + "'");
+		
+		// if the Schedule entry is found
+		if (scheduleCursor.moveToFirst()) {
+			String scheduleDate = scheduleCursor.getString(1);				
+			// select events from calendar which have the same date
+			String calQuery = "SELECT * FROM " + DBI.tableCalendar + " WHERE Date='" + scheduleDate + "'";			
+			Cursor calendarCursor = DBI.select(calQuery);
+			
+			String wthQuery = "SELECT * FROM " + DBI.tableWeather + " WHERE Date='" + scheduleDate + "'";
+			Cursor weatherCursor = DBI.select(wthQuery);
+			
+			// check conflicts with calendar
+			if (calendarCursor.moveToFirst()) {
+				while(!calendarCursor.isAfterLast()) {					
+					String calStart = calendarCursor.getString(2);
+					String schStart = scheduleCursor.getString(2);
+					String calEnd = calendarCursor.getString(3);
+					String schEnd = scheduleCursor.getString(3);
+					
+					try {
+						SimpleDateFormat parser = new SimpleDateFormat("HH:mm:ss", Locale.US);
+						// conversion to Date type
+						Date calStartDate = parser.parse(calStart);
+						Date calEndDate = parser.parse(calEnd);
+						Date schStartDate = parser.parse(schStart);
+						Date schEndDate = parser.parse(schEnd);
+						// if event slot has overlapping part
+						if ((calStartDate.before(schEndDate) && calStartDate.after(schStartDate)) ||
+								calStartDate.equals(schStartDate) || calEndDate.equals(schEndDate) || 
+								(calEndDate.before(schEndDate) && calEndDate.after(schStartDate)) ||
+								(calStartDate.before(schStartDate) && calEndDate.after(schEndDate))) {
+							return true;
+						}
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+					calendarCursor.moveToNext();
+				}
+			}
+			
+			// check conflicts with weather
+			if (weatherCursor.moveToFirst()) {
+				// one day has only one weather record
+				String weatherText = weatherCursor.getString(1);
+				// if poor weather condition
+				if (weather.isWeatherPoorCondition(weatherText)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	public boolean IsDone(int ID)
 	{
-		
 		Cursor cursor = DBI.select("SELECT * FROM " + DBI.tableSchedule + "WHERE ID = '" + ID + "'");
 		cursor.moveToFirst();
 		String date = cursor.getString(1);

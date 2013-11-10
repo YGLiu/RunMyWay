@@ -118,6 +118,9 @@ public class DBInterface{
 	  Stack<Date> dateStk = new Stack<Date>();
 	  
 	  while(evenDaysCount < 60) {
+		  cal.add(Calendar.DATE, -1);
+		  date = cal.getTime();
+		  
 		  SimpleDateFormat dayParser = new SimpleDateFormat("EEE", Locale.US);		  
 		  String day = dayParser.format(date);
 		  		  
@@ -129,8 +132,7 @@ public class DBInterface{
 			  oddDaysCount++;
 			  dateStk.push(date);
 		  }
-		  cal.add(Calendar.DATE, -1);
-		  date = cal.getTime();
+		  
 	  }
 	  
 	  // use stack to reverse the date order
