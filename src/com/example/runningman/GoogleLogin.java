@@ -16,6 +16,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -56,6 +57,13 @@ public class GoogleLogin extends Activity {
 	private GoogleAuthorizationCodeFlow flow;
 	private CalendarList calendarList;
 	private Calendar calendarService;
+	
+	// google login parameters
+	final HttpTransport httpTransport = new NetHttpTransport();
+	final JacksonFactory jsonFactory = new JacksonFactory();	
+    final String clientId = "557655694825-7v50n300c4r1grmh2jgpv5iook0n00ki.apps.googleusercontent.com";
+    final String clientSecret = "_VsFRNBgKsOLevgPZSM1RsU2";
+    final String redirectUrl = "urn:ietf:wg:oauth:2.0:oob";
 
 	@SuppressLint({ "SetJavaScriptEnabled", "JavascriptInterface" })
 	@Override
@@ -97,6 +105,9 @@ public class GoogleLogin extends Activity {
 					    		"(document.getElementById('code').value);";
 					    Log.d("[command]", jsCmd);
 					    webview.loadUrl(jsCmd);
+					    // direct to MainPage activity
+					    Intent intent = new Intent(getApplicationContext(), MainPage.class);
+				    	startActivity(intent);
 					    GoogleLogin.this.finish();
 					}
 				}
@@ -143,10 +154,8 @@ public class GoogleLogin extends Activity {
 	}
 	 
 	class JsInterface {
-		private Context ctx;
 		// constructor
 		JsInterface(Context ctx) {
-			this.ctx = ctx;
 		}
 		
 		@JavascriptInterface
@@ -162,17 +171,6 @@ public class GoogleLogin extends Activity {
 	// sync with a google account
 	// return a list of calendars of the user
 	public String getGoogleAuthRedirUrl() throws IOException {
-		final HttpTransport httpTransport = new NetHttpTransport();
-		final JacksonFactory jsonFactory = new JacksonFactory();
-		
-		// The clientId and clientSecret can be found in Google Cloud Console
-		// TODO store the parameters in database instead of hard code
-	    final String clientId = "557655694825-7v50n300c4r1grmh2jgpv5iook0n00ki.apps.googleusercontent.com";
-	    final String clientSecret = "_VsFRNBgKsOLevgPZSM1RsU2";
-
-	    // your redirect URL for web based applications.
-	    final String redirectUrl = "urn:ietf:wg:oauth:2.0:oob";
-	    
 	    // Authorize
 	    final GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
 	    		httpTransport, jsonFactory, clientId, clientSecret, Arrays.asList(CalendarScopes.CALENDAR)).setAccessType("online")
@@ -183,17 +181,6 @@ public class GoogleLogin extends Activity {
 	}
 	
 	private void getCalendarFeed(String authCode) {
-		final HttpTransport httpTransport = new NetHttpTransport();
-		final JacksonFactory jsonFactory = new JacksonFactory();
-		
-		// The clientId and clientSecret can be found in Google Cloud Console
-		// TODO store the parameters in database instead of hard code
-	    final String clientId = "557655694825-7v50n300c4r1grmh2jgpv5iook0n00ki.apps.googleusercontent.com";
-	    final String clientSecret = "_VsFRNBgKsOLevgPZSM1RsU2";
-
-	    // your redirect URL for web based applications.
-	    final String redirectUrl = "urn:ietf:wg:oauth:2.0:oob";
-		
 		try {
 	    // get response token
 		GoogleTokenResponse response = this.flow.newTokenRequest(authCode).setRedirectUri(redirectUrl).execute();       			
@@ -239,11 +226,11 @@ public class GoogleLogin extends Activity {
 		DBI.delete(DBI.tableCalendar, null);
 		// traverse every event in a calendar
 		for (CalendarListEntry entry : calendarList.getItems()) {
-			//Log.d("Calendar ID", entry.getSummary());			
+			Log.d("Calendar ID", entry.getSummary());			
 			// set the current time date
 			DateTime currDateTime = new DateTime(new Date());			
 			// retrieve events only from today onwards
-
+			
 			try {
 				Events events = calendarService.events().list(entry.getId()).setTimeMin(currDateTime).execute();
 				// traverse through all events in a calendar
@@ -252,7 +239,7 @@ public class GoogleLogin extends Activity {
 					EventDateTime start,end;
 					start = event.getStart();
 					end = event.getEnd();
-					// to avoid nullPointerException
+					// to avoid nullPoinhttp://drive.google.com/terException
 					if (start != null) {
 						DateTime startDateTime = start.getDateTime();
 						// non-full-day event
@@ -286,26 +273,4 @@ public class GoogleLogin extends Activity {
 			}
 		}
 	}
-	/*
-	private void displayCalendarDB(){
-		List<String> listValues = new ArrayList<String>();
-		String query = "SELECT * FROM " + DBI.tableCalendar + " ORDER BY Date ASC";
-		Cursor cursor = DBI.select(query);
-		cursor.moveToFirst();		
-		while(!cursor.isAfterLast())
-		{    
-			String date = cursor.getString(0);
-			String startTime = cursor.getString(1);
-			String endTime = cursor.getString(2);
-			String listEntry = date + " " + startTime + " " + endTime;
-			listValues.add(listEntry);
-			
-			cursor.moveToNext();
-		}
-		// display on the listView
-		ListView listview = (ListView) findViewById(R.id.listViewCalendar);
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listValues);
-		listview.setAdapter(adapter);
-	}
-	*/
 }

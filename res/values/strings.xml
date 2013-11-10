@@ -19,7 +19,7 @@
     <string name="Save_Button">Save</string>
     <string name="Cancel_Button">Cancel</string>
     <string name="title_activity_google_login">Connect with Google Account</string>
-    <string name="GoogleLogin">Connect with Google</string>
+    <string name="GoogleLogin">Login with Google</string>
     <string name="Connect_Button">Connect</string>
     <string name="AuthCode">Authentication Code</string>
     <string name="title_activity_sensor">Sensor</string>
@@ -41,5 +41,7 @@
     <string name="purpose_fun">For fun</string>
     <string name="title_activity_history">History</string>
     <string name="update_home_location">Update Home Location</string>
+    <string name="login_offline">Login Offline</string>
+    <string name="title_activity_main_page">MainPage</string>
 
 </resources>

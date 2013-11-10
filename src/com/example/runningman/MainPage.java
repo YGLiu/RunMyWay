@@ -8,9 +8,11 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.location.Criteria;
@@ -20,12 +22,9 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.NavUtils;
 import android.text.format.Time;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TabHost;
@@ -38,7 +37,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-public class Sensor extends Activity implements LocationListener{
+@SuppressLint("HandlerLeak")
+public class MainPage extends Activity implements LocationListener{
 	/** Called when the activity is first created. */
 	private long mlCount = 0;
 	private long mlTimerUnit = 100;
@@ -50,18 +50,6 @@ public class Sensor extends Activity implements LocationListener{
 	private Handler handler = null;
 	private Message msg = null;
 	private boolean bIsRunningFlg = false;
-	private static final String MYTIMER_TAG = "MYTIMER_LOG"; 
-	
-	// menu item
-	private static final int SETTING_SECOND_ID = Menu.FIRST + 101;
-	private static final int SETTING_100MILLISECOND_ID = Menu.FIRST + 102;
-	
-	// Setting timer unit flag
-	private int settingTimerUnitFlg = SETTING_100MILLISECOND_ID;
-	private int stepCount = 0;
-	
-	
-	
 	// Variable needed for map and database
 	private GoogleMap map;
 	private Polyline route = null;
@@ -75,8 +63,8 @@ public class Sensor extends Activity implements LocationListener{
 	private LatLng sessionCurrPos;
 	// End of variable needed for map and database
 	TextView stepView 	= null;
-	TextView startView = null;
-	TextView endView = null;
+	TextView startView 	= null;
+	TextView endView 	= null;
 	
 	int IsNotFirstRun = 0; 
 	
@@ -87,9 +75,7 @@ public class Sensor extends Activity implements LocationListener{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_sensor);
-		// Show the Up button in the action bar.
-		setupActionBar();
+		setContentView(R.layout.activity_main_page);
 		
         startView = (TextView) findViewById(R.id.startTime);
         endView = (TextView) findViewById(R.id.endTime);   
@@ -116,8 +102,6 @@ public class Sensor extends Activity implements LocationListener{
 					totalSec = (int)(mlCount / 10);
         			yushu = (int)(mlCount % 10);
         			
-    				// Set time display
-    				//int hr  = (totalSec / 3600);
     				int hr  = 0;
     				int min = (totalSec / 60);
     				while (min >=60)
@@ -133,7 +117,6 @@ public class Sensor extends Activity implements LocationListener{
     				int sec = (totalSec % 60);
     				try{
     					tvTime.setText(String.format("%1$d:%2$02d:%3$02d.%4$d", hr,min, sec, yushu));
-    					
     				} catch(Exception e) {
     					tvTime.setText("" + hr + ":" + min + ":" + sec + "." + yushu);
     					e.printStackTrace();
@@ -176,26 +159,13 @@ public class Sensor extends Activity implements LocationListener{
 		if(location!=null)
 		    onLocationChanged(location);
 		locationManager.requestLocationUpdates(provider, 1000, 0, this);
-		
 		//End of On create functions called for map and database
-
-	}
-	/**
-	 * Set up the {@link android.app.ActionBar}.
-	 */
-	private void setupActionBar() {
-		getActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.sensor, menu);
-		//-------------------------
-
-		super.onCreateOptionsMenu(menu);
-		
-		//Log.i(MYTIMER_TAG, "Menu is created.");
 		
 		// Stop timer
 		if (null != task) {
@@ -208,34 +178,16 @@ public class Sensor extends Activity implements LocationListener{
 			timer = null;
 			handler.removeMessages(msg.what);
 		}
-		
 		bIsRunningFlg = false;
 		mlCount = 0;
-
 		btnStartPause.setText("Start");
-		//btnStartPause.setImageResource(R.drawable.start);
 				
 		return true;
-	}
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			// This ID represents the Home or Up button. In the case of this
-			// activity, the Up button is shown. Use NavUtils to allow users
-			// to navigate up one level in the application structure. For
-			// more details, see the Navigation pattern on Android Design:
-			//
-			// http://developer.android.com/design/patterns/navigation.html#up-vs-back
-			//
-			NavUtils.navigateUpFromSameTask(this);
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
 	}
     // Start and pause
     View.OnClickListener startPauseListener = new View.OnClickListener() {
 
+		@SuppressLint("SimpleDateFormat")
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
@@ -244,8 +196,7 @@ public class Sensor extends Activity implements LocationListener{
 			if(IsNotFirstRun == 0)
 			{
 				//flag you need 
-				IsNotFirstRun = 1;
-				
+				IsNotFirstRun = 1;				
 				SimpleDateFormat formatter    =   new    SimpleDateFormat    ("yyyy-MM-dd    HH:mm:ss     ");       
 		        Date    curDate    =   new    Date();     
 		        String    str1    =    formatter.format(curDate); 
@@ -259,8 +210,7 @@ public class Sensor extends Activity implements LocationListener{
 				sessionCurrPos = null;
 				sessionStartTime = curDate;
 			}
-			
-			
+					
 			if (null == timer) {
 				if (null == task) {
 					task = new TimerTask() {
@@ -274,21 +224,15 @@ public class Sensor extends Activity implements LocationListener{
 							}
 							msg.what = 1;
 							handler.sendMessage(msg);
-						}
-						
+						}						
 					};
 				}
 				timer = new Timer(true);
 				timer.schedule(task, mlTimerUnit, mlTimerUnit); // set timer duration
-			}
-			
+			}			
 			// start
 			if (!bIsRunningFlg) {
 				bIsRunningFlg = true;
-				
-				
-		        
-				//btnStartPause.setImageResource(R.drawable.pause);
 				btnStartPause.setText("pause");
 			} else { // pause
 				try{
@@ -300,7 +244,6 @@ public class Sensor extends Activity implements LocationListener{
 					timer = null;
 					handler.removeMessages(msg.what);
 					btnStartPause.setText("Start");
-					//btnStartPause.setImageResource(R.drawable.start);
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -311,29 +254,23 @@ public class Sensor extends Activity implements LocationListener{
     // Stop
     View.OnClickListener stopListener = new View.OnClickListener() {
 
+		@SuppressLint("SimpleDateFormat")
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
 			//Log.i(MYTIMER_TAG, "Stop is clicked.");
-
 			if(IsNotFirstRun == 1)
 			{
 				//flag you need 
-				IsNotFirstRun = 0;
-				
+				IsNotFirstRun = 0;				
 				SimpleDateFormat formatter    =   new    SimpleDateFormat    ("yyyy-MM-dd    HH:mm:ss     ");       
 		        Date    curDate    =   new    Date();      
 		        String    str2    =    formatter.format(curDate); 
 		        endView.setText("End time: "+ str2); 
-		        
-		        //you can implement below
 		        sessionEndTime = curDate;
-		        onEnd();
-				
+		        onEnd();	
 			}
-			
-			if (null != timer) {
-								
+			if (null != timer) {					
 				task.cancel();
 				task = null;
 				timer.cancel(); // Cancel timer
@@ -341,26 +278,19 @@ public class Sensor extends Activity implements LocationListener{
 				timer = null;
 				handler.removeMessages(msg.what);
 			}
-			
 			mlCount = 0;
 			bIsRunningFlg = false;
 
 			btnStartPause.setText("Start");
-			//btnStartPause.setImageResource(R.drawable.start);
 			tvTime.setText(R.string.init_time_100millisecond);
-			
-		}
-    	
+		}    	
     };
-    
-    
-  
+
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// TODO Auto-generated method stub
 		if (KeyEvent.KEYCODE_MENU == keyCode) {
 			super.openOptionsMenu();  
-				
 			// Stop timer
 			if (null != task) {
 				task.cancel();
@@ -376,14 +306,10 @@ public class Sensor extends Activity implements LocationListener{
 			bIsRunningFlg = false;
 			mlCount = 0;
 			btnStartPause.setText("Start");
-			//btnStartPause.setImageResource(R.drawable.start);
-			
 			return true;
 		}
-		
 		return super.onKeyDown(keyCode, event);
 	}
-	
 	
 	//Functions for map
 	@Override
@@ -465,7 +391,19 @@ public class Sensor extends Activity implements LocationListener{
 		CV.put("AveSpeed", AveSpeed);
 		DBI.insert(DBI.tableHistory, CV);
 	}
-	
 	//End of functions for map
+	public void schedule(View view){
+    	Intent intent = new Intent(this, Schedule.class);
+    	startActivity(intent);
+    }
+    
+    public void personalData(View view) {
+    	Intent intent = new Intent(this, PersonalData.class);
+    	startActivity(intent);
+    }
+    
+    public void history(View view) {
+    	Intent intent = new Intent(this, History.class);
+    	startActivity(intent);
+    }	
 }
-
