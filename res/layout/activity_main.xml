@@ -26,5 +26,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/login_offline" />
+    
+    <Button
+        android:id="@+id/buttonNotiTest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Notification Test" />
 
 </LinearLayout>
