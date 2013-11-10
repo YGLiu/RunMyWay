@@ -20,9 +20,6 @@ import android.widget.Button;
 
 public class MainActivity extends Activity {
 	
-	
-	
-	
 	Button btn5, btn7;
     @Override
     protected void onCreate(Bundle savedInstanceState) {

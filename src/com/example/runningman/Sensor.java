@@ -76,17 +76,6 @@ public class Sensor extends Activity implements LocationListener{
 	private LatLng sessionPrevPos;
 	private LatLng sessionCurrPos;
 	// End of variable needed for map and database
-	
-	
-	SensorManager sm = null;
-	
-	TextView xViewA = null;
-	TextView yViewA = null;
-	TextView zViewA = null;
-	TextView xViewO = null;
-	TextView yViewO = null;
-	TextView zViewO = null;
-	TextView CheckStatusView = null;
 	TextView stepView 	= null;
 	TextView startView = null;
 	TextView endView = null;
@@ -104,18 +93,8 @@ public class Sensor extends Activity implements LocationListener{
 		// Show the Up button in the action bar.
 		setupActionBar();
 		
-		sm = (SensorManager) getSystemService(SENSOR_SERVICE);
-		xViewA = (TextView) findViewById(R.id.xbox);
-        yViewA = (TextView) findViewById(R.id.ybox);
-        zViewA = (TextView) findViewById(R.id.zbox);
-        xViewO = (TextView) findViewById(R.id.xboxo);
-        yViewO = (TextView) findViewById(R.id.yboxo);
-        zViewO = (TextView) findViewById(R.id.zboxo);
-        stepView = (TextView) findViewById(R.id.step);
         startView = (TextView) findViewById(R.id.startTime);
-        endView = (TextView) findViewById(R.id.endTime);
-        //CheckStatusView = (TextView) findViewById(R.id.check_status);
-        
+        endView = (TextView) findViewById(R.id.endTime);   
         
         tvTime = (TextView)findViewById(R.id.tvTime);
         btnStartPause = (Button)findViewById(R.id.btnStartPaunse);
@@ -181,14 +160,7 @@ public class Sensor extends Activity implements LocationListener{
         spec.setContent(R.id.tab1); 
         spec.setIndicator("Timer"); 
         tabs.addTab(spec); 
-        spec=tabs.newTabSpec("tag2"); 
-        spec.setContent(R.id.tab2); 
-        spec.setIndicator("Sensor"); 
-        tabs.addTab(spec); 
-        spec=tabs.newTabSpec("tag3"); 
-        spec.setContent(R.id.tab3); 
-        spec.setIndicator("Walking steps"); 
-        tabs.addTab(spec);
+
         spec=tabs.newTabSpec("tag4"); 
         spec.setContent(R.id.tab4); 
         spec.setIndicator("Map"); 
@@ -211,10 +183,6 @@ public class Sensor extends Activity implements LocationListener{
 		//End of On create functions called for map and database
 
 	}
-	    
-	   
-	 
-
 	/**
 	 * Set up the {@link android.app.ActionBar}.
 	 */
