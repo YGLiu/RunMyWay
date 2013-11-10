@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.location.Criteria;
 import android.location.Location;
@@ -38,11 +37,6 @@ public class PersonalData extends Activity implements LocationListener{
 		getMenuInflater().inflate(R.menu.personal_data, menu);
 		return true;
 	}
-	
-	public void GoogleLogin(View view) {
-    	Intent intent = new Intent(this, GoogleLogin.class);
-    	startActivity(intent);
-    }
 	
 	public void loadPersonalDataFromDB() {
 		String query = "SELECT * FROM " + DBI.tableUser;

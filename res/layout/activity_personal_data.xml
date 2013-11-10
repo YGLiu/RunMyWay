@@ -86,13 +86,6 @@
     </RadioGroup>
 
     <Button
-        android:id="@+id/buttonGoogleLogin"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:onClick="GoogleLogin"
-        android:text="@string/GoogleLogin" />
-
-    <Button
         android:id="@+id/buttonUpdateHomeLocation"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
