@@ -3,6 +3,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Stack;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -114,36 +115,44 @@ public class DBInterface{
 	  Date date = new Date();
 	  Calendar cal = Calendar.getInstance();
 	  cal.setTime(date);
+	  Stack<Date> dateStk = new Stack<Date>();
 	  
 	  while(evenDaysCount < 60) {
-		  SimpleDateFormat dayParser = new SimpleDateFormat("EEE", Locale.US);
-		  SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+		  SimpleDateFormat dayParser = new SimpleDateFormat("EEE", Locale.US);		  
 		  String day = dayParser.format(date);
+		  		  
+		  if(day.equalsIgnoreCase("tue") || day.equalsIgnoreCase("thu") || day.equalsIgnoreCase("sat")) {
+			  evenDaysCount++;
+			  dateStk.push(date);
+		  }
+		  else if (oddDaysCount < 40) {
+			  oddDaysCount++;
+			  dateStk.push(date);
+		  }
+		  cal.add(Calendar.DATE, -1);
+		  date = cal.getTime();
+	  }
+	  
+	  // use stack to reverse the date order
+	  while(!dateStk.empty()) {
 		  String startTime = "20:00:00";
 		  String endTime = "22:00:00";
 		  double duration = 120;
-		  final double minDist = 2 * 9000;
-		  final double maxDist = 2 * 12000;
-		  double dist = minDist + (Math.random() * maxDist);
-		  double aveSpeed = dist / 2000;
+		  final double minDist = 2 * 7000;
+		  final double maxDist = 2 * 11000;
+		  double dist = minDist + (Math.random() * (maxDist - minDist));
+		  double aveSpeed = dist / 2000;		  
+		  SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd", Locale.US);		  	  
 		  ContentValues cv = new ContentValues();
-		  cv.put("Date", dateParser.format(date));
+		  String dateString = dateParser.format(dateStk.pop());
+		  cv.put("Date", dateString);
+		  Log.d("date", dateString);
 		  cv.put("Start", startTime);
 		  cv.put("End", endTime);
 		  cv.put("Duration", duration);
 		  cv.put("Distance", dist);
 		  cv.put("AveSpeed", aveSpeed);
-		  
-		  if(day.equalsIgnoreCase("tue") || day.equalsIgnoreCase("thu") || day.equalsIgnoreCase("sat")) {
-			  evenDaysCount++;
-			  this.insert(this.tableHistory, cv);
-		  }
-		  else if (oddDaysCount < 40) {
-			  oddDaysCount++;
-			  this.insert(this.tableHistory, cv);
-		  }
-		  cal.add(Calendar.DATE, -1);
-		  date = cal.getTime();
+		  this.insert(tableHistory, cv);
 	  }
 	  this.verboseTable(tableHistory);
   }

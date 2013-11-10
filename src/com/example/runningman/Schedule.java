@@ -10,13 +10,9 @@ import java.util.Locale;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.database.Cursor;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.widget.ArrayAdapter;
@@ -24,9 +20,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.weather.tools.NetworkUtils;
-import com.google.android.gms.maps.model.LatLng;
 
-public class Schedule extends Activity implements LocationListener {
+public class Schedule extends Activity {
 	private DBInterface DBI;
 	private double AveDuration;
 	private int count_Mon;
@@ -41,7 +36,6 @@ public class Schedule extends Activity implements LocationListener {
 	private int count_evening;
 	private int count_midnight;
 	private int num_days;
-	private LatLng current_Location;
 	private Weather weather;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -62,10 +56,134 @@ public class Schedule extends Activity implements LocationListener {
 		// initiate Weather table
 		weather = new Weather(getApplicationContext());
 		getHistoryPattern();
-		getCurrentLocation();
+		updateSchedule();
+		ComputeSchedule();
 		displaySchedule();
 	}
-
+	
+	public void ComputeSchedule()
+	{	if(IsScheduleEmpty())
+		{	AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
+		// set title
+		alertDialogBuilder.setTitle("Warning");
+		// set dialog message and button events
+		alertDialogBuilder
+		.setMessage("Currently you do not have any schedule.\nWould you like to build one?")
+		.setCancelable(false)
+		.setPositiveButton("Build",new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog,int id) {
+				Compute();
+			}
+		})
+		.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog,int id) {
+				// if this button is clicked, just close
+				dialog.cancel();
+			}
+		});
+		// create alert dialog
+		AlertDialog alertDialog = alertDialogBuilder.create(); 
+		// show alert dialog
+		alertDialog.show();
+		}
+		else
+		{
+			if(gotConflictEvents())
+			{	AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
+				// set title
+				alertDialogBuilder.setTitle("Warning");
+				// set dialog message and button events
+				alertDialogBuilder
+				.setMessage("You have conflicts in your schedule.\nWould you like to re-build?")
+				.setCancelable(false)
+				.setPositiveButton("Build",new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog,int id) {
+						Recompute();
+					}
+				})
+				.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog,int id) {
+						// if this button is clicked, just close
+						dialog.cancel();
+					}
+				});
+				// create alert dialog
+				AlertDialog alertDialog = alertDialogBuilder.create(); 
+				// show alert dialog
+				alertDialog.show();	
+			}
+		}	
+	}
+	public void Compute()
+	{}
+	public void Recompute()
+	{}
+	public boolean gotConflictEvents()
+	{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableSchedule + " WHERE Status = 'CONFLICT'");
+		cursor.moveToFirst();
+		if(cursor.getInt(0) > 0)
+			return true;
+		else
+			return false;
+	}
+	public boolean IsScheduleEmpty()
+	{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableSchedule);
+		cursor.moveToFirst();
+		if(cursor.getInt(0) == 0)
+			return true;
+		else
+			return false;
+	}
+	public void updateSchedule()
+	{	try	
+		{	Cursor cursor = DBI.select("SELECT * FROM " + DBI.tableSchedule + " WHERE Status <> 'PASSED'");
+			Date curr = new Date();
+			cursor.moveToFirst();
+			while(!cursor.isAfterLast())
+			{	if((new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(1) + cursor.getString(2))).after(curr))
+				{	ContentValues CV = new ContentValues();
+					if(Isconflict(cursor.getInt(0)))
+					{	
+						CV.put("Status", "CONFLICT");
+						DBI.update(DBI.tableSchedule, CV, "Id = '" + cursor.getInt(0) + "'");
+					}
+					else
+					{	
+						CV.put("Status", "UPCOMING");
+						DBI.update(DBI.tableSchedule, CV, "Id = '" + cursor.getInt(0) + "'");
+					}
+				}
+				else
+				{	ContentValues CV = new ContentValues();
+					if(IsDone(cursor.getInt(0)))
+					{	
+						CV.put("Status", "PASSED");
+						DBI.update(DBI.tableSchedule, CV, "Id = '" + cursor.getInt(0) + "'");
+					}
+					else
+					{	
+						CV.put("Status", "CONFLICT");
+						DBI.update(DBI.tableSchedule, CV, "Id = '" + cursor.getInt(0) + "'");
+					}
+				}
+				cursor.moveToNext();
+			}
+			cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableSchedule + " WHERE Status <> 'PASSED'");
+			cursor.moveToFirst();
+			if(cursor.getInt(0) == 0)
+				DBI.delete(DBI.tableSession, null);
+		}
+		catch(Exception e)
+		{	e.printStackTrace();}
+	}
+	public boolean Isconflict(int ID)
+	{
+		return true;
+	}
+	public boolean IsDone(int ID)
+	{
+		return true;
+	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -200,139 +318,20 @@ public class Schedule extends Activity implements LocationListener {
 		return hrsBehind;
 	}
 	
-	public ArrayList<String> isConflicting() {
-		// boolean result = false;
-		ArrayList<String> conflictIds = new ArrayList<String> ();
-		ArrayList<String> calConflictIds = isScheduleCollidesCalendar();
-		ArrayList<String> wthConflictIds = isScheduleCollidesWeather();
-		int calConflictsCount = calConflictIds.size();
-		int wthConflictsCount = wthConflictIds.size();
-		
-		/*
-		if(calConflictsCount > 0) {
-			result = true;
-			stats += Integer.toString(calConflictsCount) + " conflicts with calendar.\n";
-		}
-		if(wthConflictsCount > 0) {
-			result = true;
-			stats += Integer.toString(wthConflictsCount) + " conflicts with weather.\n";
-		}
-		*/
-		
-		// generate a ArrayList of unique Ids of conflicting schedule
-		if(calConflictsCount > 0 || wthConflictsCount > 0) {
-			//stats += "We suggest you reschedule your exercise plan.";
-			
-			conflictIds.addAll(wthConflictIds);
-			for (int i = 0; i < calConflictIds.size(); i++) {
-				String calId = calConflictIds.get(i);
-				if (!wthConflictIds.contains(calId)) {
-					conflictIds.add(calId);					
-				}
-			}
-			
-			/*
-			// generate dialog to ask user if re-computation is needed
-			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
-			// set title
-			alertDialogBuilder.setTitle("Warning");
-			// set dialog message and button events
-			alertDialogBuilder
-			.setMessage(stats)
-			.setCancelable(false)
-			.setPositiveButton("Reschedule",new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog,int id) {
-					computeSchedule();
-				}
-			})
-			.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog,int id) {
-					// if this button is clicked, just close
-					dialog.cancel();
-				}
-			});
-			// create alert dialog
-			AlertDialog alertDialog = alertDialogBuilder.create(); 
-			// show alert dialog
-			alertDialog.show();
-			*/
-		}		
-		return conflictIds;
-	}
-	
-	public void computeSchedule() {
-		/*
-		* TODO
-		* Insert algorithm here
-		* Assigned to: Liu Yaguang
-		*/
-		ArrayList<String> conflictItems = isConflicting();
-		// this should be the last step of this method
-		// display the new schedule
-	}
-	
 	private void displaySchedule() {
-		// debugging purpose, remove Schedule table
-		// DBI.delete(DBI.tableSchedule, null);
 		List<String> listValues = new ArrayList<String>();
 		String query = "SELECT * FROM " + DBI.tableSchedule + " ORDER BY Date ASC";
 		Cursor cursor = DBI.select(query);
-		Date currentDate = new Date();
-		
-		// if Schedule table is not empty
-		if (cursor.moveToFirst()) {
-			while(!cursor.isAfterLast()) {
-				String date = cursor.getString(1);
-				String start = cursor.getString(2);
-				String end = cursor.getString(3);
-				cursor.moveToNext();
-				try {
-					Date entryDate = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(date);					
-					String status;
-					if(currentDate.after(entryDate)) {
-						status = "PASSED |";
-					}
-					else {
-						status = "TO DO    |";
-					}
-					String listEntry = status + " " + date + " " + start + " " + end;
-					listValues.add(listEntry);
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
-			}
-			// display on the listView
-			ListView listview = (ListView) findViewById(R.id.listViewSchedule);
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listValues);
-			listview.setAdapter(adapter);
+		cursor.moveToFirst();
+		while(!cursor.isAfterLast()) 
+		{	String listEntry = cursor.getString(1) + "  " + cursor.getString(2) + " - " + cursor.getString(3) + "  " + cursor.getString(4);
+			listValues.add(listEntry);
+			cursor.moveToNext();
 		}
-		// if Schedule table is empty, prompt user to build one
-		else {
-			AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
-			// set title
-			alertDialogBuilder.setTitle("Warning");
-			// set dialog message and button events
-			alertDialogBuilder
-			.setMessage("Currently you do not have a schedule.\nWould you like to build one?")
-			.setCancelable(false)
-			.setPositiveButton("Build",new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog,int id) {
-					computeSchedule();
-					// recursively call this again to display Schedule
-					displaySchedule();
-				}
-			})
-			.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog,int id) {
-					// if this button is clicked, just close
-					dialog.cancel();
-				}
-			});
-			// create alert dialog
-			AlertDialog alertDialog = alertDialogBuilder.create(); 
-			// show alert dialog
-			alertDialog.show();
-		}
+		// display on the listView
+		ListView listview = (ListView) findViewById(R.id.listViewSchedule);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listValues);
+		listview.setAdapter(adapter);
 	}
 
 	private void getHistoryPattern()
@@ -387,24 +386,4 @@ public class Schedule extends Activity implements LocationListener {
 		catch(Exception e)
 		{	e.printStackTrace(); }
 	}
-	private void getCurrentLocation()
-	{	LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		Criteria criteria = new Criteria();
-		String provider = locationManager.getBestProvider(criteria, true);
-		Location location = locationManager.getLastKnownLocation(provider);
-		if(location!=null)
-		    onLocationChanged(location);
-		locationManager.requestLocationUpdates(provider, 1000, 0, this);
-	}
-
-	@Override
-	public void onLocationChanged(Location location) {
-		current_Location = new LatLng(location.getLatitude(), location.getLongitude());
-	}
-	@Override
-	public void onProviderDisabled(String provider) {}
-	@Override
-	public void onProviderEnabled(String provider) {}
-	@Override
-	public void onStatusChanged(String provider, int status, Bundle extras) {}
 }
