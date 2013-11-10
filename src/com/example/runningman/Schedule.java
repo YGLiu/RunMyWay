@@ -115,7 +115,9 @@ public class Schedule extends Activity {
 		}	
 	}
 	public void Compute()
-	{}
+	{
+		
+	}
 	public void Recompute()
 	{}
 	public boolean gotConflictEvents()
@@ -182,7 +184,23 @@ public class Schedule extends Activity {
 	}
 	public boolean IsDone(int ID)
 	{
-		return true;
+		Cursor cursor = DBI.select("SELECT * FROM " + DBI.tableSchedule + "WHERE ID = '" + ID + "'");
+		cursor.moveToFirst();
+		String date = cursor.getString(1);
+		String start = cursor.getString(2);
+		String end = cursor.getString(3);
+		String historyStart, historyEnd;
+		cursor = DBI.select("SELECT * FROM " + DBI.tableHistory + "WHERE Date = '" + date + "'");
+		cursor.moveToFirst();
+		while(!cursor.isAfterLast())
+		{	historyStart = cursor.getString(1);
+			historyEnd = cursor.getString(2);
+			//compare
+			//if overlap
+			// return true;
+			cursor.moveToNext();
+		}
+		return false;
 	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
