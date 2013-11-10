@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+    
+    <TabHost
+        android:id="@android:id/tabhost"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+            </TabWidget>
+
+            <FrameLayout
+                android:id="@android:id/tabcontent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <LinearLayout
+                    android:id="@+id/tab1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical" >
+                    
+				                    
+				    <TextView
+				        android:id="@+id/tvTime"
+				        android:layout_width="fill_parent"
+				        android:layout_height="wrap_content"
+				        android:gravity="center"
+				        android:text="@string/init_time_100millisecond"
+				        android:textSize="60sp" />
+				
+				    <TextView
+				        android:layout_width="wrap_content"
+				        android:layout_height="wrap_content"
+				        android:text=" " />
+				
+				    <LinearLayout
+				        android:layout_width="fill_parent"
+				        android:layout_height="wrap_content"
+				        android:gravity="center"
+				        android:orientation="horizontal" >
+				
+				        <Button
+				            android:id="@+id/btnStartPaunse"
+				            android:layout_width="wrap_content"
+				            android:layout_height="wrap_content"
+				            android:text="Start"
+				            android:textSize="20sp" />
+				
+				        <TextView
+				            android:layout_width="wrap_content"
+				            android:layout_height="wrap_content"
+				            android:text="    " />
+				
+				        <Button
+				            android:id="@+id/btnStop"
+				            android:layout_width="wrap_content"
+				            android:layout_height="wrap_content"
+				            android:text="Stop"
+				            android:textSize="20sp" />
+				    </LinearLayout>
+				
+				    <TextView
+				        android:id="@+id/startTime"
+				        android:layout_width="fill_parent"
+				        android:layout_height="wrap_content"
+				        android:text="Start Time: " />
+				
+				    <TextView
+				        android:id="@+id/endTime"
+				        android:layout_width="fill_parent"
+				        android:layout_height="wrap_content"
+				        android:text="Stop Time: " />
+				    
+				    <TextView
+				        android:id="@+id/AveSpeed"
+				        android:layout_width="fill_parent"
+				        android:layout_height="wrap_content"/>
+				    
+				    <TextView
+				        android:id="@+id/TotalDist"
+				        android:layout_width="fill_parent"
+				        android:layout_height="wrap_content"/>
+
+				    <RelativeLayout
+				        android:layout_width="match_parent"
+				        android:layout_height="match_parent" >
+
+				        <Button
+				            android:id="@+id/PersonalData"
+				            android:layout_width="wrap_content"
+				            android:layout_height="wrap_content"
+				            android:layout_alignParentBottom="true"
+				            android:layout_alignParentLeft="true"
+				            android:layout_alignParentRight="true"
+				            android:text="Personal Data" 
+				            android:onClick="personalData"/>
+
+				        <Button
+				            android:id="@+id/History"
+				            android:layout_width="wrap_content"
+				            android:layout_height="wrap_content"
+				            android:layout_above="@+id/PersonalData"
+				            android:layout_alignParentLeft="true"
+				            android:layout_alignParentRight="true"
+				            android:text="History" 
+				            android:onClick="history"/>
+
+				        <Button
+				            android:id="@+id/Schedule"
+				            android:layout_width="wrap_content"
+				            android:layout_height="wrap_content"
+				            android:layout_above="@+id/History"
+				            android:layout_alignParentLeft="true"
+				            android:layout_alignParentRight="true"
+				            android:text="Schedule" 
+				            android:onClick="schedule"/>
+
+				    </RelativeLayout>
+				                
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/tab4"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" >
+					
+				      <fragment
+				        android:id="@+id/map"
+				        android:layout_width="match_parent"
+				        android:layout_height="match_parent"
+				        class="com.google.android.gms.maps.MapFragment" />
+				    
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </TabHost>
+
+</LinearLayout>
