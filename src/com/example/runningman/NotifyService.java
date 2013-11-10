@@ -18,6 +18,7 @@ public class NotifyService extends IntentService {
 	}
 
 
+	@SuppressWarnings("deprecation")
 	private void noti(Context myContext, String data) {
 		NotificationManager mNotificationManager =
     	        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);

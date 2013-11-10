@@ -182,7 +182,39 @@ public class Schedule extends Activity {
 	}
 	public boolean IsDone(int ID)
 	{
-		return true;
+		
+		Cursor cursor = DBI.select("SELECT * FROM " + DBI.tableSchedule + "WHERE ID = '" + ID + "'");
+		cursor.moveToFirst();
+		String date = cursor.getString(1);
+		String start = cursor.getString(2);
+		String end = cursor.getString(3);
+		String historyStart, historyEnd;
+		try{
+			SimpleDateFormat parser = new SimpleDateFormat ("HH:mm:ss", Locale.US);
+			Date calStart = parser.parse(start);
+			Date calEnd = parser.parse(end);
+			cursor = DBI.select("SELECT * FROM " + DBI.tableHistory + "WHERE Date = '" + date + "'");
+			cursor.moveToFirst();
+			while(!cursor.isAfterLast())
+			{	historyStart = cursor.getString(1);
+				historyEnd = cursor.getString(2);
+				Date calHistoryStart = parser.parse(historyStart);
+				Date calHistoryEnd = parser.parse(historyEnd);
+				//compare
+				if (calStart.before(calHistoryEnd) && calHistoryStart.before(calStart))
+					return true;
+				else if (calEnd.before(calHistoryEnd) && calHistoryStart.before(calEnd))
+					return true;
+				else if (calStart.before(calHistoryStart) && calHistoryEnd.before(calEnd))
+					return true;
+				else if (calStart.equals(calHistoryStart) || calHistoryEnd.equals(calEnd))
+					return true;
+				else
+					cursor.moveToNext();
+			}
+			return false;
+		}catch (ParseException ex) { }
+		return false;
 	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
