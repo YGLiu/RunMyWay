@@ -28,8 +28,8 @@ public class NotifyService extends IntentService {
     	    .setWhen(System.currentTimeMillis())
     	    .setDefaults(Notification.DEFAULT_SOUND)
     	    .setAutoCancel(true)
-    	    .setContentText("You've received" + data + "messages.")
-    	    .setSmallIcon(R.drawable.tag_blue);
+    	    .setContentText("You've received " + data + " messages.")
+    	    .setSmallIcon(R.drawable.ic_launcher);
     	//int numMessages = 0;
     	// Start of a loop that processes data and then notifies the user
     	
