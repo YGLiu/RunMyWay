@@ -1,5 +1,6 @@
 package com.example.runningman;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -7,21 +8,11 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
-
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.hardware.SensorListener;
-import android.hardware.SensorManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -39,6 +30,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TabHost;
 import android.widget.TextView;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 public class Sensor extends Activity implements LocationListener{
 	/** Called when the activity is first created. */
@@ -101,7 +99,6 @@ public class Sensor extends Activity implements LocationListener{
         btnStop = (Button)findViewById(R.id.btnStop);
         
         SharedPreferences sharedPreferences = getSharedPreferences("mytimer_unit", Context.MODE_PRIVATE);
-        //getString()第二个参数为缺省值，如果preference中不存在该key，将返回缺省值
         mlTimerUnit = sharedPreferences.getLong("time_unit", 100);
         Log.i(MYTIMER_TAG, "mlTimerUnit = " + mlTimerUnit);
 		tvTime.setText(R.string.init_time_100millisecond);
@@ -250,9 +247,9 @@ public class Sensor extends Activity implements LocationListener{
 				IsNotFirstRun = 1;
 				
 				SimpleDateFormat formatter    =   new    SimpleDateFormat    ("yyyy-MM-dd    HH:mm:ss     ");       
-		        Date    curDate    =   new    Date(System.currentTimeMillis());//获取当前时间       
+		        Date    curDate    =   new    Date();     
 		        String    str1    =    formatter.format(curDate); 
-		        startView.setText("Start time："+ str1); 
+		        startView.setText("Start time: "+ str1); 
 		        endView.setText(""); 
 		        // you can implement below
 				DBI.delete(DBI.tableSession, null);
@@ -325,9 +322,9 @@ public class Sensor extends Activity implements LocationListener{
 				IsNotFirstRun = 0;
 				
 				SimpleDateFormat formatter    =   new    SimpleDateFormat    ("yyyy-MM-dd    HH:mm:ss     ");       
-		        Date    curDate    =   new    Date(System.currentTimeMillis());//获取当前时间       
+		        Date    curDate    =   new    Date();      
 		        String    str2    =    formatter.format(curDate); 
-		        endView.setText("End time："+ str2); 
+		        endView.setText("End time: "+ str2); 
 		        
 		        //you can implement below
 		        sessionEndTime = curDate;
@@ -362,8 +359,7 @@ public class Sensor extends Activity implements LocationListener{
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// TODO Auto-generated method stub
 		if (KeyEvent.KEYCODE_MENU == keyCode) {
-			super.openOptionsMenu();  // 调用这个，就可以弹出菜单
-
+			super.openOptionsMenu();  
 			Log.i(MYTIMER_TAG, "Menu key is clicked.");
 				
 			// Stop timer
@@ -412,7 +408,16 @@ public class Sensor extends Activity implements LocationListener{
 				Location.distanceBetween(sessionPrevPos.latitude, sessionPrevPos.longitude, sessionCurrPos.latitude, sessionCurrPos.longitude, result);
 				sessionDistance += result[0];
 			}
+			Date Curr = new Date();
+			double duration = (double)((double)(Curr.getTime() - sessionStartTime.getTime())/1000/60/60);
+			double aveSpeed = sessionDistance/1000/duration;
+			TextView distance = (TextView) findViewById(R.id.TotalDist);
+	        TextView speed = (TextView) findViewById(R.id.AveSpeed);
+	        distance.setText("Total Distance: " + new DecimalFormat("#.00").format(sessionDistance/1000) + " km");
+	        speed.setText("Average Speed: " + new DecimalFormat("#.00").format(aveSpeed) + " km/h");
 		}
+		else
+			showRoute();
     }
 	@Override
 	public void onProviderDisabled(String arg0) {
