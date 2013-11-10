@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
@@ -21,11 +22,9 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.NavUtils;
 import android.text.format.Time;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TabHost;
@@ -38,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+@SuppressLint("HandlerLeak")
 public class MainPage extends Activity implements LocationListener{
 	/** Called when the activity is first created. */
 	private long mlCount = 0;
@@ -50,18 +50,6 @@ public class MainPage extends Activity implements LocationListener{
 	private Handler handler = null;
 	private Message msg = null;
 	private boolean bIsRunningFlg = false;
-	private static final String MYTIMER_TAG = "MYTIMER_LOG"; 
-	
-	// menu item
-	private static final int SETTING_SECOND_ID = Menu.FIRST + 101;
-	private static final int SETTING_100MILLISECOND_ID = Menu.FIRST + 102;
-	
-	// Setting timer unit flag
-	private int settingTimerUnitFlg = SETTING_100MILLISECOND_ID;
-	private int stepCount = 0;
-	
-	
-	
 	// Variable needed for map and database
 	private GoogleMap map;
 	private Polyline route = null;
@@ -75,8 +63,8 @@ public class MainPage extends Activity implements LocationListener{
 	private LatLng sessionCurrPos;
 	// End of variable needed for map and database
 	TextView stepView 	= null;
-	TextView startView = null;
-	TextView endView = null;
+	TextView startView 	= null;
+	TextView endView 	= null;
 	
 	int IsNotFirstRun = 0; 
 	
@@ -129,7 +117,6 @@ public class MainPage extends Activity implements LocationListener{
     				int sec = (totalSec % 60);
     				try{
     					tvTime.setText(String.format("%1$d:%2$02d:%3$02d.%4$d", hr,min, sec, yushu));
-    					
     				} catch(Exception e) {
     					tvTime.setText("" + hr + ":" + min + ":" + sec + "." + yushu);
     					e.printStackTrace();
@@ -172,9 +159,7 @@ public class MainPage extends Activity implements LocationListener{
 		if(location!=null)
 		    onLocationChanged(location);
 		locationManager.requestLocationUpdates(provider, 1000, 0, this);
-		
 		//End of On create functions called for map and database
-
 	}
 
 	@Override
@@ -193,10 +178,8 @@ public class MainPage extends Activity implements LocationListener{
 			timer = null;
 			handler.removeMessages(msg.what);
 		}
-		
 		bIsRunningFlg = false;
 		mlCount = 0;
-
 		btnStartPause.setText("Start");
 				
 		return true;
@@ -204,6 +187,7 @@ public class MainPage extends Activity implements LocationListener{
     // Start and pause
     View.OnClickListener startPauseListener = new View.OnClickListener() {
 
+		@SuppressLint("SimpleDateFormat")
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
@@ -212,8 +196,7 @@ public class MainPage extends Activity implements LocationListener{
 			if(IsNotFirstRun == 0)
 			{
 				//flag you need 
-				IsNotFirstRun = 1;
-				
+				IsNotFirstRun = 1;				
 				SimpleDateFormat formatter    =   new    SimpleDateFormat    ("yyyy-MM-dd    HH:mm:ss     ");       
 		        Date    curDate    =   new    Date();     
 		        String    str1    =    formatter.format(curDate); 
@@ -227,8 +210,7 @@ public class MainPage extends Activity implements LocationListener{
 				sessionCurrPos = null;
 				sessionStartTime = curDate;
 			}
-			
-			
+					
 			if (null == timer) {
 				if (null == task) {
 					task = new TimerTask() {
@@ -242,21 +224,15 @@ public class MainPage extends Activity implements LocationListener{
 							}
 							msg.what = 1;
 							handler.sendMessage(msg);
-						}
-						
+						}						
 					};
 				}
 				timer = new Timer(true);
 				timer.schedule(task, mlTimerUnit, mlTimerUnit); // set timer duration
-			}
-			
+			}			
 			// start
 			if (!bIsRunningFlg) {
 				bIsRunningFlg = true;
-				
-				
-		        
-				//btnStartPause.setImageResource(R.drawable.pause);
 				btnStartPause.setText("pause");
 			} else { // pause
 				try{
@@ -268,7 +244,6 @@ public class MainPage extends Activity implements LocationListener{
 					timer = null;
 					handler.removeMessages(msg.what);
 					btnStartPause.setText("Start");
-					//btnStartPause.setImageResource(R.drawable.start);
 				} catch(Exception e) {
 					e.printStackTrace();
 				}
@@ -279,29 +254,23 @@ public class MainPage extends Activity implements LocationListener{
     // Stop
     View.OnClickListener stopListener = new View.OnClickListener() {
 
+		@SuppressLint("SimpleDateFormat")
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
 			//Log.i(MYTIMER_TAG, "Stop is clicked.");
-
 			if(IsNotFirstRun == 1)
 			{
 				//flag you need 
-				IsNotFirstRun = 0;
-				
+				IsNotFirstRun = 0;				
 				SimpleDateFormat formatter    =   new    SimpleDateFormat    ("yyyy-MM-dd    HH:mm:ss     ");       
 		        Date    curDate    =   new    Date();      
 		        String    str2    =    formatter.format(curDate); 
 		        endView.setText("End time: "+ str2); 
-		        
-		        //you can implement below
 		        sessionEndTime = curDate;
-		        onEnd();
-				
+		        onEnd();	
 			}
-			
-			if (null != timer) {
-								
+			if (null != timer) {					
 				task.cancel();
 				task = null;
 				timer.cancel(); // Cancel timer
@@ -309,26 +278,19 @@ public class MainPage extends Activity implements LocationListener{
 				timer = null;
 				handler.removeMessages(msg.what);
 			}
-			
 			mlCount = 0;
 			bIsRunningFlg = false;
 
 			btnStartPause.setText("Start");
-			//btnStartPause.setImageResource(R.drawable.start);
 			tvTime.setText(R.string.init_time_100millisecond);
-			
-		}
-    	
+		}    	
     };
-    
-    
-  
+
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		// TODO Auto-generated method stub
 		if (KeyEvent.KEYCODE_MENU == keyCode) {
 			super.openOptionsMenu();  
-				
 			// Stop timer
 			if (null != task) {
 				task.cancel();
@@ -344,14 +306,10 @@ public class MainPage extends Activity implements LocationListener{
 			bIsRunningFlg = false;
 			mlCount = 0;
 			btnStartPause.setText("Start");
-			//btnStartPause.setImageResource(R.drawable.start);
-			
 			return true;
 		}
-		
 		return super.onKeyDown(keyCode, event);
 	}
-	
 	
 	//Functions for map
 	@Override
@@ -449,4 +407,3 @@ public class MainPage extends Activity implements LocationListener{
     	startActivity(intent);
     }	
 }
-
