@@ -40,7 +40,7 @@ import android.widget.Button;
 import android.widget.TabHost;
 import android.widget.TextView;
 
-public class Sensor extends Activity implements SensorListener,LocationListener{
+public class Sensor extends Activity implements LocationListener{
 	/** Called when the activity is first created. */
 	private long mlCount = 0;
 	private long mlTimerUnit = 100;
@@ -124,7 +124,7 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
         SharedPreferences sharedPreferences = getSharedPreferences("mytimer_unit", Context.MODE_PRIVATE);
         //getString()第二个参数为缺省值，如果preference中不存在该key，将返回缺省值
         mlTimerUnit = sharedPreferences.getLong("time_unit", 100);
-        Log.i(MYTIMER_TAG, "mlTimerUnit = " + mlTimerUnit);
+        //Log.i(MYTIMER_TAG, "mlTimerUnit = " + mlTimerUnit);
 		tvTime.setText(R.string.init_time_100millisecond);
 		// Handle timer message
         handler = new Handler(){
@@ -161,7 +161,7 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
     				} catch(Exception e) {
     					tvTime.setText("" + hr + ":" + min + ":" + sec + "." + yushu);
     					e.printStackTrace();
-    					Log.e("MyTimer onCreate", "Format string error.");
+    					//Log.e("MyTimer onCreate", "Format string error.");
     				}
     				break;
     				
@@ -211,59 +211,10 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 		//End of On create functions called for map and database
 
 	}
-	 public void onSensorChanged(int sensor, float[] values) {
-	        synchronized (this) {
-	            Log.d(tag, "onSensorChanged: " + sensor + ", x: " + values[0] + ", y: " + values[1] + ", z: " + values[2]);
-	            if (sensor == SensorManager.SENSOR_ORIENTATION) {
-		            xViewO.setText("Orientation X: " + values[0]);
-		            yViewO.setText("Orientation Y: " + values[1]);
-		            zViewO.setText("Orientation Z: " + values[2]);
-		            
-	            }
-	            if (sensor == SensorManager.SENSOR_ACCELEROMETER) {
-		            xViewA.setText("Accel X: " + values[0]);
-		            yViewA.setText("Accel Y: " + values[1]);
-		            zViewA.setText("Accel Z: " + values[2]);
-		            if (values[2] < -11 || values[2] >11)
-		            {
-		            	stepCount++;
-		            }
-		            // (values[2] >-9 & values[2] < 9 ) |
-		            /*if(values[0]>3 || values[1]>3 || values[0]<-3 || values[1]<-3)
-		            {
-		            	CheckStatusView.setBackgroundColor(0x0000FF00);
-		            	CheckStatusView.setText("In train");
-		            }
-		            else 
-		            {
-		            	CheckStatusView.setBackgroundColor(0x00FF0000);
-		            	CheckStatusView.setText("In station");
-		            }*/
-	            }          
-	            stepView.setText("Number: " + stepCount);
-	        }
-	    }
 	    
-	    public void onAccuracyChanged(int sensor, int accuracy) {
-	    	Log.d(tag,"onAccuracyChanged: " + sensor + ", accuracy: " + accuracy);
-	        
-	    }
+	   
 	 
 
-	    @Override
-	    protected void onResume() {
-	        super.onResume();
-	        sm.registerListener(this, 
-	                SensorManager.SENSOR_ORIENTATION |
-	        		SensorManager.SENSOR_ACCELEROMETER,
-	                SensorManager.SENSOR_DELAY_NORMAL);
-	    }
-	    
-	    @Override
-	    protected void onStop() {
-	        sm.unregisterListener(this);
-	        super.onStop();
-	    } 
 	/**
 	 * Set up the {@link android.app.ActionBar}.
 	 */
@@ -279,7 +230,7 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 
 		super.onCreateOptionsMenu(menu);
 		
-		Log.i(MYTIMER_TAG, "Menu is created.");
+		//Log.i(MYTIMER_TAG, "Menu is created.");
 		
 		// Stop timer
 		if (null != task) {
@@ -323,7 +274,7 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
-			Log.i(MYTIMER_TAG, "Start/Pause is clicked.");
+			//Log.i(MYTIMER_TAG, "Start/Pause is clicked.");
 			
 			if(IsNotFirstRun == 0)
 			{
@@ -398,7 +349,7 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub
-			Log.i(MYTIMER_TAG, "Stop is clicked.");
+			//Log.i(MYTIMER_TAG, "Stop is clicked.");
 
 			if(IsNotFirstRun == 1)
 			{
@@ -445,7 +396,7 @@ public class Sensor extends Activity implements SensorListener,LocationListener{
 		if (KeyEvent.KEYCODE_MENU == keyCode) {
 			super.openOptionsMenu();  // 调用这个，就可以弹出菜单
 
-			Log.i(MYTIMER_TAG, "Menu key is clicked.");
+			//Log.i(MYTIMER_TAG, "Menu key is clicked.");
 				
 			// Stop timer
 			if (null != task) {

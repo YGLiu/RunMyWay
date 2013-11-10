@@ -68,19 +68,25 @@
             android:onClick="History" />
 
         <Button
-            android:id="@+id/button5"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.333"
-            android:text="@string/MapIcon"
-            android:onClick="GetCurrentLocation" />
-
-        <Button
             android:id="@+id/button6"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="0.333"
         	android:text="@string/WeatherIcon" />
+
+        <Button
+            android:id="@+id/button5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.333"
+            android:text="Activate" />
+
+        <Button
+            android:id="@+id/button7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.333"
+            android:text="Deactivate" />
         
     </LinearLayout>
     

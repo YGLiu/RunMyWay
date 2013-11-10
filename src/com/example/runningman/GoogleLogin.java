@@ -165,13 +165,13 @@ public class GoogleLogin extends Activity {
         		    	@Override
         		    	public void onTokenResponse(Credential credential, TokenResponse tokenResponse) {
 					        // Handle success.
-					        Log.d("Success:","Credential was refreshed successfully.");
+					        //Log.d("Success:","Credential was refreshed successfully.");
         		    	}
         		    	@Override
         		    	public void onTokenErrorResponse(Credential credential, TokenErrorResponse tokenErrorResponse) {
 					        // Handle error.
-					        Log.d("Error:", "Credential was not refreshed successfully. "
-					            + "Redirect to error page or login screen.");
+					        //Log.d("Error:", "Credential was not refreshed successfully. "
+					           // + "Redirect to error page or login screen.");
         		    	}
 				    })
         		    .build();
@@ -203,7 +203,7 @@ public class GoogleLogin extends Activity {
 		DBI.delete(DBI.tableCalendar, null);
 		// traverse every event in a calendar
 		for (CalendarListEntry entry : calendarList.getItems()) {
-			Log.d("Calendar ID", entry.getSummary());			
+			//Log.d("Calendar ID", entry.getSummary());			
 			// set the current time date
 			DateTime currDateTime = new DateTime(new Date());			
 			// retrieve events only from today onwards
@@ -222,7 +222,7 @@ public class GoogleLogin extends Activity {
 					// non-full-day event
 					if (startDateTime != null) {
 						String startDateTimeString = startDateTime.toString();
-						Log.d("Start Time",startDateTimeString);
+						//Log.d("Start Time",startDateTimeString);
 						// construct content value
 						cv = new ContentValues();
 						cv.put("Date", startDateTimeString.substring(0, 10).toString());
@@ -234,7 +234,7 @@ public class GoogleLogin extends Activity {
 					// non-full-day event
 					if (endDateTime != null){
 						String endDateTimeString = endDateTime.toString();
-						Log.d("Start Time", endDateTimeString);
+						//Log.d("Start Time", endDateTimeString);
 						cv.put("End", endDateTimeString.substring(11, 19));
 					}
 				}				
