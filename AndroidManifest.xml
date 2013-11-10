@@ -22,10 +22,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    
-    <uses-permission android:name="android.permission.VIBRATE" />    
-	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> 
-    
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -40,14 +39,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="com.example.runningman.GetMap"
-            android:label="@string/title_activity_get_map"
-            android:parentActivityName="com.example.runningman.MainActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.runningman.MainActivity" />
-        </activity>
 
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
@@ -56,30 +47,14 @@
         <activity
             android:name="com.example.runningman.PersonalData"
             android:label="@string/title_activity_personal_data"
-            android:parentActivityName="com.example.runningman.MainActivity" >
+            android:parentActivityName="com.example.runningman.MainPage" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.runningman.MainActivity" />
+                android:value="com.example.runningman.MainPage" />
         </activity>
         <activity
             android:name="com.example.runningman.GoogleLogin"
             android:label="@string/title_activity_google_login"
-            android:parentActivityName="com.example.runningman.PersonalData" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.runningman.PersonalData" />
-        </activity>
-        <activity
-            android:name="com.example.runningman.Sensor"
-            android:label="@string/title_activity_sensor"
-            android:parentActivityName="com.example.runningman.MainActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.runningman.MainActivity" />
-        </activity>
-        <activity
-            android:name="com.example.runningman.Weather"
-            android:label="@string/title_activity_weather"
             android:parentActivityName="com.example.runningman.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -88,37 +63,39 @@
         <activity
             android:name="com.example.runningman.Schedule"
             android:label="@string/title_activity_schedule"
-            android:parentActivityName="com.example.runningman.MainActivity" >
+            android:parentActivityName="com.example.runningman.MainPage" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.runningman.MainActivity" />
+                android:value="com.example.runningman.MainPage" />
         </activity>
         <activity
             android:name="com.example.runningman.History"
             android:label="@string/title_activity_history"
-            android:parentActivityName="com.example.runningman.MainActivity" >
+            android:parentActivityName="com.example.runningman.MainPage" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.runningman.MainActivity" />
+                android:value="com.example.runningman.MainPage" />
         </activity>
-        
+
         <service
             android:name="com.example.runningman.NotifyService"
             android:icon="@drawable/ic_launcher"
-  			android:label="service_name" > 
-            
+            android:label="service_name" >
         </service>
-        
-        <receiver 
+
+        <receiver
             android:name="com.example.runningman.NotifyBroadcastReceiver"
             android:icon="@drawable/ic_launcher"
-  			android:label="service_name" > 
+            android:label="service_name" >
             <intent-filter>
-            <action
-                    android:name="com.example.runningman.NotifyAction"/>
-        </intent-filter>
+                <action android:name="com.example.runningman.NotifyAction" />
+            </intent-filter>
         </receiver>
-        
+
+        <activity
+            android:name="com.example.runningman.MainPage"
+            android:label="@string/title_activity_main_page" >
+        </activity>
     </application>
 
 </manifest>

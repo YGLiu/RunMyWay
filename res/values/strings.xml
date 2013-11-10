@@ -42,5 +42,6 @@
     <string name="title_activity_history">History</string>
     <string name="update_home_location">Update Home Location</string>
     <string name="login_offline">Log in Offline</string>
+    <string name="title_activity_main_page">MainPage</string>
 
 </resources>
