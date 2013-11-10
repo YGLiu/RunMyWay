@@ -229,9 +229,9 @@ public class GoogleLogin extends Activity {
 			Log.d("Calendar ID", entry.getSummary());			
 			// set the current time date
 			DateTime currDateTime = new DateTime(new Date());			
-			// retrieve events only from today onwards
 			
 			try {
+				// retrieve events only from today onwards
 				Events events = calendarService.events().list(entry.getId()).setTimeMin(currDateTime).execute();
 				// traverse through all events in a calendar
 				for (Event event : events.getItems()) {

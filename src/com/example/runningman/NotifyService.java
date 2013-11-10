@@ -22,10 +22,12 @@ public class NotifyService extends IntentService {
     	        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     	// Sets an ID for the notification, so it can be updated
     	int notifyID = 1;
+    	//int myNumber = 1;
     	Notification.Builder mNotifyBuilder = new Notification.Builder(myContext)
     	    .setContentTitle("New Message")
     	    //.setVibrate(3000.00)
     	    .setWhen(System.currentTimeMillis())
+    	    //.setNumber(++myNumber)
     	    .setDefaults(Notification.DEFAULT_SOUND)
     	    .setAutoCancel(true)
     	    .setContentText("You've received " + data + " messages.")
