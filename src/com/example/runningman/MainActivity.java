@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
 				//
 				Intent myIntent = new Intent(myContext, NotifyService.class);
 				myIntent.putExtra("abc", "123456");
-				myIntent.setAction("com.example.runningman.NotifyAction");
+				myIntent.setAction("com.example.runningman.MainActivity");
 				AlarmManager alarams ;
 				PendingIntent alarmIntent = PendingIntent.getService(myContext, 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 				alarams = (AlarmManager) getSystemService(ALARM_SERVICE);
