@@ -239,11 +239,11 @@ public class GoogleLogin extends Activity {
 		DBI.delete(DBI.tableCalendar, null);
 		// traverse every event in a calendar
 		for (CalendarListEntry entry : calendarList.getItems()) {
-			//Log.d("Calendar ID", entry.getSummary());			
+			Log.d("Calendar ID", entry.getSummary());			
 			// set the current time date
 			DateTime currDateTime = new DateTime(new Date());			
 			// retrieve events only from today onwards
-
+			
 			try {
 				Events events = calendarService.events().list(entry.getId()).setTimeMin(currDateTime).execute();
 				// traverse through all events in a calendar
@@ -252,7 +252,7 @@ public class GoogleLogin extends Activity {
 					EventDateTime start,end;
 					start = event.getStart();
 					end = event.getEnd();
-					// to avoid nullPointerException
+					// to avoid nullPoinhttp://drive.google.com/terException
 					if (start != null) {
 						DateTime startDateTime = start.getDateTime();
 						// non-full-day event
