@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
         // generate dummy history records
         DBInterface DBI = new DBInterface(this);
         DBI.dummyHistory(true);
-        //dummyschedule();
+        dummyschedule();
         GoogleLogin.setOnClickListener(new View.OnClickListener(){
 			@Override
 			public void onClick(View v) {
@@ -71,27 +71,27 @@ public class MainActivity extends Activity {
     public void dummyschedule()
     {	DBInterface DBI = new DBInterface(this);
     	ContentValues CV = new ContentValues();
-    	CV.put("Date", "2014-01-01");
+    	CV.put("Date", "2013-11-17");
+    	CV.put("Start", "09:00:00");
+    	CV.put("End", "12:00:00");
+    	CV.put("Status", "UPCOMING");
+    	DBI.insert(DBI.tableSchedule, CV);
+    	CV = new ContentValues();
+    	CV.put("Date", "2013-11-15");
     	CV.put("Start", "08:00:00");
     	CV.put("End", "10:00:00");
     	DBI.insert(DBI.tableCalendar, CV);
     	CV = new ContentValues();
-    	CV.put("Date", "2014-01-01");
-    	CV.put("Start", "08:00:00");
-    	CV.put("End", "10:00:00");
+    	CV.put("Date", "2013-11-16");
+    	CV.put("Start", "09:00:00");
+    	CV.put("End", "12:00:00");
     	CV.put("Status", "UPCOMING");
     	DBI.insert(DBI.tableSchedule, CV);
     	CV = new ContentValues();
-    	CV.put("Date", "2012-01-01");
+    	CV.put("Date", "2013-11-14");
     	CV.put("Start", "08:00:00");
     	CV.put("End", "10:00:00");
     	DBI.insert(DBI.tableCalendar, CV);
-    	CV = new ContentValues();
-    	CV.put("Date", "2012-01-01");
-    	CV.put("Start", "08:00:00");
-    	CV.put("End", "10:00:00");
-    	CV.put("Status", "UPCOMING");
-    	DBI.insert(DBI.tableSchedule, CV);
     }
     
 }

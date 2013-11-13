@@ -4,6 +4,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -120,15 +122,15 @@ public class Schedule extends Activity {
 				// show alert dialog
 				alertDialog.show();	
 			}
-		}	
+		}
 	}
 	
 	public ArrayList<slot> getEmptySlot()
 	{	ArrayList<slot> emptyslots = new ArrayList<slot>();
 		ArrayList<slot> occupiedslot = new ArrayList<slot>();
 		Date cur = new Date();
-		Calendar cal = Calendar.getInstance();
 		
+		Calendar cal = Calendar.getInstance();
 		cal.setTime(cur);
 		cal.add(Calendar.DATE, 7);
 		Date oneWeek = cal.getTime();
@@ -141,6 +143,7 @@ public class Schedule extends Activity {
 				Date eventEnd = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(0) + cursor.getString(2));
 				if(eventStart.after(cur) && eventStart.before(oneWeek))
 					occupiedslot.add(new slot(eventStart,eventEnd));
+				cursor.moveToNext();
 			}
 			catch(Exception e)
 			{	e.printStackTrace();}
@@ -155,12 +158,19 @@ public class Schedule extends Activity {
 				Date eventEnd = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(1) + cursor.getString(3));
 				if(eventStart.after(cur) && eventStart.before(oneWeek))
 					occupiedslot.add(new slot(eventStart,eventEnd));
+				cursor.moveToNext();
 			}
 			catch(Exception e)
 			{	e.printStackTrace();}
 		}
 		cursor.close();
-		
+		Collections.sort(occupiedslot, new Comparator<slot>() {
+			  public int compare(slot o1, slot o2) {
+			      return o1.start.compareTo(o2.start);
+			  }
+		});
+		for(slot i:occupiedslot)
+			System.out.println(i.start + " " + i.end + " " + i.timeofday + " " + i.day);
 		return emptyslots;
 	}
 	
@@ -179,7 +189,6 @@ public class Schedule extends Activity {
 		{
 			
 		}
-		
 	}
 	public int removeConflictedEvents()
 	{	Cursor cursor = DBI.select("SELECT Id,Start,End FROM " + DBI.tableSchedule + " WHERE Status = 'CONFLICT' OR Status = 'MISSED'");
@@ -189,11 +198,13 @@ public class Schedule extends Activity {
 		{	try
 			{	long diff = (long) new SimpleDateFormat("HH:mm:ss",Locale.US).parse(cursor.getString(2)).getTime() - (long) new SimpleDateFormat("HH:mm:ss",Locale.US).parse(cursor.getString(1)).getTime();
 				total += (double) (diff/1000/60);
-				DBI.delete(DBI.tableSchedule, "Id = '" + cursor.getInt(0) + "'");
+				DBI.delete(DBI.tableSchedule, "Id = '" + cursor.getString(0) + "'");
+				cursor.moveToNext();
 			}
 			catch(Exception e)
 			{	e.printStackTrace();}
 		}
+		System.out.println("remove conflicted events" + total);
 		return (int) Math.ceil(total);
 	}
 	public void ComputeNewSchedule()
@@ -207,10 +218,12 @@ public class Schedule extends Activity {
 			Compute((int)Math.ceil(AveDuration*7/num_days));
 		else
 			Compute(120);
+		displaySchedule();
 	}
 	public void RecomputeSchedule()
 	{	int duration = removeConflictedEvents();
 		Compute(duration);
+		displaySchedule();
 	}
 	public boolean gotConflictEvents()
 	{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableSchedule + " WHERE Status = 'CONFLICT'");
@@ -232,13 +245,9 @@ public class Schedule extends Activity {
 	{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableSchedule);
 		cursor.moveToFirst();
 		if(cursor.getInt(0) == 0)
-		{	cursor.close();
 			return true;
-		}
 		else
-		{	cursor.close();
 			return false;
-		}
 	}
 	public void updateSchedule()
 	{	try	
