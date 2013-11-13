@@ -22,19 +22,10 @@
         android:layout_weight="0.1">
 
         <Button
-            android:id="@+id/conflict"
-            android:layout_width="0dp"
+            android:id="@+id/reSchedule"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="@string/RebuildConflict" 
-            style="?android:attr/buttonBarButtonStyle"/>
-
-        <Button
-            android:id="@+id/missed"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="@string/RebuildMissed" 
+            android:text="@string/Rebuild" 
             style="?android:attr/buttonBarButtonStyle"/>
 
     </LinearLayout>

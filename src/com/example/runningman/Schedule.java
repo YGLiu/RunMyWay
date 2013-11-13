@@ -54,18 +54,11 @@ public class Schedule extends Activity {
 		
 		// debugging purpose
 		DBI.verboseTable(DBI.tableCalendar);
-		Button rebuildConflict = (Button) findViewById(R.id.conflict);
-		Button rebuildMissed = (Button) findViewById(R.id.missed);
-		rebuildConflict.setOnClickListener(new View.OnClickListener(){
+		Button rebuild = (Button) findViewById(R.id.reSchedule);
+		rebuild.setOnClickListener(new View.OnClickListener(){
 			@Override
 			public void onClick(View v) {
-				 RecomputeConflict();
-			}
-        });
-		rebuildMissed.setOnClickListener(new View.OnClickListener(){
-			@Override
-			public void onClick(View v) {
-				 RecomputeMissed();
+				RecomputeSchedule();
 			}
         });
 		// initiate Weather table
@@ -83,11 +76,11 @@ public class Schedule extends Activity {
 		alertDialogBuilder.setTitle("Warning");
 		// set dialog message and button events
 		alertDialogBuilder
-		.setMessage("Currently you do not have any schedule.\nWould you like to build one?")
+		.setMessage("Currently you do not have any schedule.\nWould you like to build one now?")
 		.setCancelable(false)
 		.setPositiveButton("Build",new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog,int id) {
-				Compute();
+				ComputeNewSchedule();
 			}
 		})
 		.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
@@ -103,41 +96,17 @@ public class Schedule extends Activity {
 		}
 		else
 		{
-			if(gotConflictEvents())
+			if(gotConflictEvents() || gotMissedEvents())
 			{	AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
 				// set title
 				alertDialogBuilder.setTitle("Warning");
 				// set dialog message and button events
 				alertDialogBuilder
-				.setMessage("You have conflicts in your schedule.\nWould you like to re-build?")
+				.setMessage("You have conflicted sessions or missed sessions in your schedule.\nWould you like to re-build?")
 				.setCancelable(false)
-				.setPositiveButton("Build",new DialogInterface.OnClickListener() {
+				.setPositiveButton("Re-build",new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog,int id) {
-						RecomputeConflict();
-					}
-				})
-				.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog,int id) {
-						// if this button is clicked, just close
-						dialog.cancel();
-					}
-				});
-				// create alert dialog
-				AlertDialog alertDialog = alertDialogBuilder.create(); 
-				// show alert dialog
-				alertDialog.show();	
-			}
-			if(gotMissedEvents())
-			{	AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
-				// set title
-				alertDialogBuilder.setTitle("Warning");
-				// set dialog message and button events
-				alertDialogBuilder
-				.setMessage("You have missed sessions in your schedule.\nWould you like to re-build?")
-				.setCancelable(false)
-				.setPositiveButton("Build",new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog,int id) {
-						RecomputeMissed();
+						RecomputeSchedule();
 					}
 				})
 				.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
@@ -156,53 +125,55 @@ public class Schedule extends Activity {
 	
 	public ArrayList<slot> getEmptySlot()
 	{	ArrayList<slot> emptyslots = new ArrayList<slot>();
-		ArrayList<slot> calendarslots = new ArrayList<slot>();
-		ArrayList<slot> scheduleslots = new ArrayList<slot>();
+		ArrayList<slot> occupiedslot = new ArrayList<slot>();
 		Date cur = new Date();
+		Calendar cal = Calendar.getInstance();
+		
+		cal.setTime(cur);
+		cal.add(Calendar.DATE, 7);
+		Date oneWeek = cal.getTime();
+		
 		Cursor cursor = DBI.select("SELECT * FROM " + DBI.tableCalendar);
 		cursor.moveToFirst();
 		while(!cursor.isAfterLast())
 		{	try
-			{	Date eventdate = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(0) + cursor.getString(1));
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(cur);
-				cal.add(Calendar.DATE, 7);
-				Date oneWeek = cal.getTime();
-				if(eventdate.after(cur) && eventdate.before(oneWeek))
-					calendarslots.add(new slot(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(0)),new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(1)),new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(2))));
+			{	Date eventStart = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(0) + cursor.getString(1));
+				Date eventEnd = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(0) + cursor.getString(2));
+				if(eventStart.after(cur) && eventStart.before(oneWeek))
+					occupiedslot.add(new slot(eventStart,eventEnd));
 			}
 			catch(Exception e)
 			{	e.printStackTrace();}
 		}
 		cursor.close();
+		
 		cursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
 		cursor.moveToFirst();
 		while(!cursor.isAfterLast())
 		{	try
-			{	Date eventdate = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(1) + cursor.getString(2));
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(cur);
-				cal.add(Calendar.DATE, 7);
-				Date oneWeek = cal.getTime();
-				if(eventdate.after(cur) && eventdate.before(oneWeek))
-					calendarslots.add(new slot(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(1)),new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(2)),new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(3))));
+			{	Date eventStart = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(1) + cursor.getString(2));
+				Date eventEnd = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(1) + cursor.getString(3));
+				if(eventStart.after(cur) && eventStart.before(oneWeek))
+					occupiedslot.add(new slot(eventStart,eventEnd));
 			}
 			catch(Exception e)
 			{	e.printStackTrace();}
 		}
 		cursor.close();
+		
 		return emptyslots;
 	}
 	
-	public void Compute()
-	{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableHistory);
+	public void Compute(int duration)
+	{	boolean hasHistoryRecord = false;
+		Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableHistory);
 		cursor.moveToFirst();
+		if(cursor.getInt(0) > 30)
+			hasHistoryRecord = true;
 		cursor.close();
 		ArrayList<slot> emptyslots = getEmptySlot();
-		cursor = DBI.select("SELECT * FROM " + DBI.tableCalendar);
-		if(cursor.getInt(0) > 30)
-		{	int num = (int) Math.ceil(7/num_days);
-			
+		if(hasHistoryRecord)
+		{	
 		}
 		else
 		{
@@ -210,10 +181,37 @@ public class Schedule extends Activity {
 		}
 		
 	}
-	public void RecomputeConflict()
-	{}
-	public void RecomputeMissed()
-	{}
+	public int removeConflictedEvents()
+	{	Cursor cursor = DBI.select("SELECT Id,Start,End FROM " + DBI.tableSchedule + " WHERE Status = 'CONFLICT' OR Status = 'MISSED'");
+		cursor.moveToFirst();
+		double total = 0;
+		while(!cursor.isAfterLast())
+		{	try
+			{	long diff = (long) new SimpleDateFormat("HH:mm:ss",Locale.US).parse(cursor.getString(2)).getTime() - (long) new SimpleDateFormat("HH:mm:ss",Locale.US).parse(cursor.getString(1)).getTime();
+				total += (double) (diff/1000/60);
+				DBI.delete(DBI.tableSchedule, "Id = '" + cursor.getInt(0) + "'");
+			}
+			catch(Exception e)
+			{	e.printStackTrace();}
+		}
+		return (int) Math.ceil(total);
+	}
+	public void ComputeNewSchedule()
+	{	boolean hasHistoryRecord = false;
+		Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableHistory);
+		cursor.moveToFirst();
+		if(cursor.getInt(0) > 30)
+			hasHistoryRecord = true;
+		cursor.close();
+		if(hasHistoryRecord)
+			Compute((int)Math.ceil(AveDuration*7/num_days));
+		else
+			Compute(120);
+	}
+	public void RecomputeSchedule()
+	{	int duration = removeConflictedEvents();
+		Compute(duration);
+	}
 	public boolean gotConflictEvents()
 	{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableSchedule + " WHERE Status = 'CONFLICT'");
 		cursor.moveToFirst();
@@ -531,6 +529,7 @@ public class Schedule extends Activity {
 		listview.setAdapter(adapter);
 	}
 
+	@SuppressWarnings("deprecation")
 	private void getHistoryPattern()
 	{	try
 		{	ArrayList<HistoryData> historyData = new ArrayList<HistoryData>();
