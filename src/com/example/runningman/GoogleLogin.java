@@ -10,6 +10,7 @@ package com.example.runningman;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -99,16 +100,19 @@ public class GoogleLogin extends Activity {
 					// Get the cookie from cookie jar.
 					String title = view.getTitle();
 									
-					String[] parts = title.split("=");
-					if (parts[0].equalsIgnoreCase("Success code")) {
-					    String jsCmd = "javascript:window.authCodeGetter.getAuthCodeFromHTML" +
-					    		"(document.getElementById('code').value);";
-					    Log.d("[command]", jsCmd);
-					    webview.loadUrl(jsCmd);
-					    // direct to MainPage activity
-					    Intent intent = new Intent(getApplicationContext(), MainPage.class);
-				    	startActivity(intent);
-					    GoogleLogin.this.finish();
+					// avoid nullPointerException
+					if (title != null) {
+						String[] parts = title.split("=");
+						if (parts[0].equalsIgnoreCase("Success code")) {
+						    String jsCmd = "javascript:window.authCodeGetter.getAuthCodeFromHTML" +
+						    		"(document.getElementById('code').value);";
+						    // Log.d("[command]", jsCmd);
+						    webview.loadUrl(jsCmd);
+						    // direct to MainPage activity
+						    Intent intent = new Intent(getApplicationContext(), MainPage.class);
+					    	startActivity(intent);
+						    GoogleLogin.this.finish();
+						}
 					}
 				}
 			});
@@ -161,7 +165,7 @@ public class GoogleLogin extends Activity {
 		@JavascriptInterface
 		public void getAuthCodeFromHTML(String data) {
 			String authCode = data;
-			Log.d("HTML", authCode);
+			// Log.d("HTML", authCode);
 			getCalendarFeed(authCode);
 		    storeCalendarDB();
 		    DBI.verboseTable(DBI.tableCalendar);
@@ -226,13 +230,21 @@ public class GoogleLogin extends Activity {
 		DBI.delete(DBI.tableCalendar, null);
 		// traverse every event in a calendar
 		for (CalendarListEntry entry : calendarList.getItems()) {
-			Log.d("Calendar ID", entry.getSummary());			
-			// set the current time date
-			DateTime currDateTime = new DateTime(new Date());			
+			// Log.d("Calendar ID", entry.getSummary());			
+			// set the current date time
+			DateTime currDateTime = new DateTime(new Date());
+			// set the date one week after current date time
+			Date oneWeekAfterDate = new Date();
+			GregorianCalendar calendar = new GregorianCalendar();
+		    calendar.setTime(oneWeekAfterDate);
+		    calendar.add(java.util.Calendar.DATE, 7);
+		    oneWeekAfterDate.setTime(calendar.getTime().getTime());
+		    DateTime oneWeekAfterDateTime = new DateTime(oneWeekAfterDate);
 			
 			try {
 				// retrieve events only from today onwards
-				Events events = calendarService.events().list(entry.getId()).setTimeMin(currDateTime).execute();
+				Events events = calendarService.events().list(entry.getId()).
+						setTimeMin(currDateTime).setTimeMax(oneWeekAfterDateTime).execute();
 				// traverse through all events in a calendar
 				for (Event event : events.getItems()) {
 					ContentValues cv = null;
@@ -245,7 +257,7 @@ public class GoogleLogin extends Activity {
 						// non-full-day event
 						if (startDateTime != null) {
 							String startDateTimeString = startDateTime.toString();
-							Log.d("Start Time",startDateTimeString);
+							// Log.d("Start Time",startDateTimeString);
 							// construct content value
 							cv = new ContentValues();
 							cv.put("Date", startDateTimeString.substring(0, 10).toString());
@@ -257,7 +269,7 @@ public class GoogleLogin extends Activity {
 						// non-full-day event
 						if (endDateTime != null){
 							String endDateTimeString = endDateTime.toString();
-							Log.d("End Time", endDateTimeString);
+							// Log.d("End Time", endDateTimeString);
 							cv.put("End", endDateTimeString.substring(11, 19));
 						}
 					}				
