@@ -9,15 +9,11 @@ import java.util.List;
 import java.util.Locale;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -157,16 +153,55 @@ public class Schedule extends Activity {
 			}
 		}	
 	}
+	
+	public ArrayList<slot> getEmptySlot()
+	{	ArrayList<slot> emptyslots = new ArrayList<slot>();
+		ArrayList<slot> calendarslots = new ArrayList<slot>();
+		ArrayList<slot> scheduleslots = new ArrayList<slot>();
+		Date cur = new Date();
+		Cursor cursor = DBI.select("SELECT * FROM " + DBI.tableCalendar);
+		cursor.moveToFirst();
+		while(!cursor.isAfterLast())
+		{	try
+			{	Date eventdate = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(0) + cursor.getString(1));
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(cur);
+				cal.add(Calendar.DATE, 7);
+				Date oneWeek = cal.getTime();
+				if(eventdate.after(cur) && eventdate.before(oneWeek))
+					calendarslots.add(new slot(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(0)),new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(1)),new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(2))));
+			}
+			catch(Exception e)
+			{	e.printStackTrace();}
+		}
+		cursor.close();
+		cursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
+		cursor.moveToFirst();
+		while(!cursor.isAfterLast())
+		{	try
+			{	Date eventdate = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(1) + cursor.getString(2));
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(cur);
+				cal.add(Calendar.DATE, 7);
+				Date oneWeek = cal.getTime();
+				if(eventdate.after(cur) && eventdate.before(oneWeek))
+					calendarslots.add(new slot(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(1)),new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(2)),new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(cursor.getString(3))));
+			}
+			catch(Exception e)
+			{	e.printStackTrace();}
+		}
+		cursor.close();
+		return emptyslots;
+	}
+	
 	public void Compute()
 	{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableHistory);
 		cursor.moveToFirst();
 		cursor.close();
-		ArrayList<slot> emptyslots = new ArrayList<slot>();
-		Date date = new Date();
+		ArrayList<slot> emptyslots = getEmptySlot();
 		cursor = DBI.select("SELECT * FROM " + DBI.tableCalendar);
-		
 		if(cursor.getInt(0) > 30)
-		{	
+		{	int num = (int) Math.ceil(7/num_days);
 			
 		}
 		else
