@@ -185,7 +185,7 @@ public class Schedule extends Activity {
 		if (scheduleCursor.moveToFirst()) 
 		{
 			String scheduleDate = scheduleCursor.getString(1);				
-			// select events from calendar which have the same date
+
 			String calQuery = "SELECT * FROM " + DBI.tableCalendar + " WHERE Date='" + scheduleDate + "'";			
 			Cursor calendarCursor = DBI.select(calQuery);
 			
