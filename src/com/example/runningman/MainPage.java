@@ -375,6 +375,7 @@ public class MainPage extends Activity implements LocationListener{
 		{	pos.add(new LatLng(cursor.getDouble(1),cursor.getDouble(2)));
 			cursor.moveToNext();
 		}
+		cursor.close();
 	}
 	private void onEnd()
 	{	String start = new SimpleDateFormat("HH:mm:ss",Locale.US).format(sessionStartTime);

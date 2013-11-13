@@ -110,6 +110,7 @@ public class History extends Activity {
 			historyData.add(history);
 			cursor.moveToNext();
 		}
+		cursor.close();
 	}
 	private void DistanceHistory()
 	{	try
@@ -244,10 +245,13 @@ public class History extends Activity {
 	}
 	private double getUserWeight()
 	{	Cursor cursor = DBI.select("SELECT * FROM " + DBI.tableUser);
+		Double weight;
 		cursor.moveToFirst();
 		if(cursor.getCount() == 0)
-			return 0;
+			weight = 0.0;
 		else
-			return cursor.getDouble(3);
+			weight = cursor.getDouble(3);
+		cursor.close();
+		return weight;
 	}
 }

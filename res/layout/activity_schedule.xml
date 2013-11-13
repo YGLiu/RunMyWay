@@ -8,13 +8,35 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:orientation="vertical"
     tools:context=".Schedule" >
-    
-    <ListView
+	<ListView
         android:id="@+id/listViewSchedule"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" >
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.9">
     </ListView>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp" 
+        android:layout_weight="0.1">
+
+        <Button
+            android:id="@+id/conflict"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/RebuildConflict" 
+            style="?android:attr/buttonBarButtonStyle"/>
+
+        <Button
+            android:id="@+id/missed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/RebuildMissed" 
+            style="?android:attr/buttonBarButtonStyle"/>
+
+    </LinearLayout>
 
 </LinearLayout>
