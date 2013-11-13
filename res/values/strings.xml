@@ -42,5 +42,7 @@
     <string name="stop">Stop</string>
     <string name="startTime">Start Time: </string>
     <string name="stopTime">Stop Time: </string>
+    <string name="RebuildConflict">Reschedule Conflict</string>
+    <string name="RebuildMissed">Reschedule Missed</string>
 
 </resources>

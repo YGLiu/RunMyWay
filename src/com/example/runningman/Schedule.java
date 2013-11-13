@@ -9,13 +9,19 @@ import java.util.List;
 import java.util.Locale;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -52,7 +58,20 @@ public class Schedule extends Activity {
 		
 		// debugging purpose
 		DBI.verboseTable(DBI.tableCalendar);
-		
+		Button rebuildConflict = (Button) findViewById(R.id.conflict);
+		Button rebuildMissed = (Button) findViewById(R.id.missed);
+		rebuildConflict.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				 RecomputeConflict();
+			}
+        });
+		rebuildMissed.setOnClickListener(new View.OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				 RecomputeMissed();
+			}
+        });
 		// initiate Weather table
 		weather = new Weather(getApplicationContext());
 		getHistoryPattern();
@@ -98,7 +117,31 @@ public class Schedule extends Activity {
 				.setCancelable(false)
 				.setPositiveButton("Build",new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog,int id) {
-						Recompute();
+						RecomputeConflict();
+					}
+				})
+				.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog,int id) {
+						// if this button is clicked, just close
+						dialog.cancel();
+					}
+				});
+				// create alert dialog
+				AlertDialog alertDialog = alertDialogBuilder.create(); 
+				// show alert dialog
+				alertDialog.show();	
+			}
+			if(gotMissedEvents())
+			{	AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);		 
+				// set title
+				alertDialogBuilder.setTitle("Warning");
+				// set dialog message and button events
+				alertDialogBuilder
+				.setMessage("You have missed sessions in your schedule.\nWould you like to re-build?")
+				.setCancelable(false)
+				.setPositiveButton("Build",new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog,int id) {
+						RecomputeMissed();
 					}
 				})
 				.setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
@@ -115,13 +158,37 @@ public class Schedule extends Activity {
 		}	
 	}
 	public void Compute()
-	{
+	{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableHistory);
+		cursor.moveToFirst();
+		cursor.close();
+		ArrayList<slot> emptyslots = new ArrayList<slot>();
+		Date date = new Date();
+		cursor = DBI.select("SELECT * FROM " + DBI.tableCalendar);
+		
+		if(cursor.getInt(0) > 30)
+		{	
+			
+		}
+		else
+		{
+			
+		}
 		
 	}
-	public void Recompute()
+	public void RecomputeConflict()
+	{}
+	public void RecomputeMissed()
 	{}
 	public boolean gotConflictEvents()
 	{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableSchedule + " WHERE Status = 'CONFLICT'");
+		cursor.moveToFirst();
+		if(cursor.getInt(0) > 0)
+			return true;
+		else
+			return false;
+	}
+	public boolean gotMissedEvents()
+	{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableSchedule + " WHERE Status = 'MISSED'");
 		cursor.moveToFirst();
 		if(cursor.getInt(0) > 0)
 			return true;
@@ -132,9 +199,13 @@ public class Schedule extends Activity {
 	{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableSchedule);
 		cursor.moveToFirst();
 		if(cursor.getInt(0) == 0)
+		{	cursor.close();
 			return true;
+		}
 		else
+		{	cursor.close();
 			return false;
+		}
 	}
 	public void updateSchedule()
 	{	try	
@@ -160,16 +231,18 @@ public class Schedule extends Activity {
 						DBI.update(DBI.tableSchedule, CV, "Id = '" + cursor.getInt(0) + "'");
 					}
 					else
-					{	CV.put("Status", "CONFLICT");
+					{	CV.put("Status", "MISSED");
 						DBI.update(DBI.tableSchedule, CV, "Id = '" + cursor.getInt(0) + "'");
 					}
 				}
 				cursor.moveToNext();
 			}
+			cursor.close();
 			cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableSchedule + " WHERE Status <> 'PASSED'");
 			cursor.moveToFirst();
 			if(cursor.getInt(0) == 0)
 				DBI.delete(DBI.tableSession, null);
+			cursor.close();
 		}
 		catch(Exception e)
 		{	e.printStackTrace();}
@@ -267,7 +340,9 @@ public class Schedule extends Activity {
 					cursor.moveToNext();
 			}
 			return false;
-		}catch (ParseException ex) { }
+		}
+		catch (ParseException ex) 
+		{ 	ex.printStackTrace();}
 		return false;
 	}
 	@Override
@@ -414,6 +489,7 @@ public class Schedule extends Activity {
 			listValues.add(listEntry);
 			cursor.moveToNext();
 		}
+		cursor.close();
 		// display on the listView
 		ListView listview = (ListView) findViewById(R.id.listViewSchedule);
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listValues);
@@ -438,6 +514,7 @@ public class Schedule extends Activity {
 				historyData.add(history);
 				cursor.moveToNext();
 			}
+			cursor.close();
 			for(HistoryData data : historyData)
 			{	sum += data.duration;
 				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Mon"))

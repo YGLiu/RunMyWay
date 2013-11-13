@@ -34,3 +34,10 @@ Set the API version to 4.3 and add these two folders into the project as librari
 * GraphView-master
 
 To use Google Map API
+
+### Contact developers
+To report any issue in the program,
+click [here](https://github.com/YGLiu/RunMyWay/issues).
+
+To discuss with developers,
+email us via [cs4274group7@gmail.com](cs4274group7@gmail.com).

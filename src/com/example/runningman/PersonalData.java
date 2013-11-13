@@ -119,6 +119,7 @@ public class PersonalData extends Activity implements LocationListener{
 				alertDialog.show();
 			}			
 		}
+		cursor.close();
 		// if not, do not touch the GUI.
 	}
 	
@@ -266,6 +267,7 @@ public class PersonalData extends Activity implements LocationListener{
 			// DBI.insert(DBI.tableUser, cv);
 			showAlert("Alert", "Personal Data cannot be left empty.");
 		}
+		cursor.close();
 	}
 	
 	@Override

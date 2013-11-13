@@ -63,6 +63,7 @@ public class DBInterface{
 		  else {
 			  Log.v("[empty table]", "Empty " + this.tableCalendar + " Table.");
 		  }
+		  csr.close();
 	  }
 	  else if (tableName.equals(this.tableSchedule)) {
 		  String query = "SELECT * FROM " + this.tableSchedule;
@@ -81,6 +82,7 @@ public class DBInterface{
 		  else {
 			  Log.v("[empty table]", "Empty " + this.tableSchedule + " Table.");
 		  }
+		  csr.close();
 	  }
 	 else if (tableName.equals(this.tableHistory)) {
 		  String query = "SELECT * FROM " + this.tableHistory;
@@ -102,6 +104,7 @@ public class DBInterface{
 		  else {
 			  Log.v("[empty table]", "Empty " + this.tableHistory + " Table.");
 		  }
+		  csr.close();
 	  }
   }
   
