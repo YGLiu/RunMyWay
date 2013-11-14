@@ -179,7 +179,8 @@ public class DBInterface{
 		  try {
 			  Date startDate = timeParser.parse(startTime);
 			  final double minDrtn = 45;
-			  final double maxDrtn = 90;			  
+			  final double maxDrtn = 90;
+			  // duration: minutes
 			  double duration = minDrtn + (randomDuration.nextFloat() * (maxDrtn - minDrtn));
 			  cal.setTime(startDate);
 			  cal.add(Calendar.MINUTE, (int) duration);
@@ -187,9 +188,10 @@ public class DBInterface{
 			  // Log.d("endDate", endDate.toString());
 			  String endTime = timeParser.format(endDate);
 			  // Log.d("[endTime]", endTime);
-			  final double minDist = duration * 6000;
-			  final double maxDist = duration * 90000;
+			  final double minDist = duration / 60 * 6000;
+			  final double maxDist = duration / 60 * 9000;
 			  double dist = minDist + (randomDistance.nextFloat() * (maxDist - minDist));
+			  // average speed: km /hour
 			  double aveSpeed = dist / 1000 / (duration / 60);
 			  SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd", Locale.US);		  	  
 			  ContentValues cv = new ContentValues();
