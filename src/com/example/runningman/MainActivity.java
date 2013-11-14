@@ -92,6 +92,11 @@ public class MainActivity extends Activity {
     	CV.put("Start", "08:00:00");
     	CV.put("End", "10:00:00");
     	DBI.insert(DBI.tableCalendar, CV);
+    	CV = new ContentValues();
+    	CV.put("Date", "2013-11-16");
+    	CV.put("Start", "08:00:00");
+    	CV.put("End", "10:00:00");
+    	DBI.insert(DBI.tableCalendar, CV);
     }
     
 }

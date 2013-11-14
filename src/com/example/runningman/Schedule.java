@@ -28,17 +28,7 @@ import com.example.weather.tools.NetworkUtils;
 public class Schedule extends Activity {
 	private DBInterface DBI;
 	private double AveDuration;
-	private int count_Mon;
-	private int count_Tue;
-	private int count_Wed;
-	private int count_Thu;
-	private int count_Fri;
-	private int count_Sat;
-	private int count_Sun;
-	private int count_morning;
-	private int count_afternoon;
-	private int count_evening;
-	private int count_midnight;
+	private HistoryPattern pattern;
 	private int num_days;
 	private Weather weather;
 	@Override
@@ -53,7 +43,6 @@ public class Schedule extends Activity {
         	Toast.makeText(getApplicationContext(), "Network connection is unavailable!!", Toast.LENGTH_SHORT).show();
         	return;
         }
-		
 		// debugging purpose
 		DBI.verboseTable(DBI.tableCalendar);
 		Button rebuild = (Button) findViewById(R.id.reSchedule);
@@ -135,7 +124,14 @@ public class Schedule extends Activity {
 		cal.add(Calendar.DATE, 7);
 		Date oneWeek = cal.getTime();
 		
-		Cursor cursor = DBI.select("SELECT * FROM " + DBI.tableCalendar);
+		boolean hasHistoryRecord = false;
+		Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableHistory);
+		cursor.moveToFirst();
+		if(cursor.getInt(0) > 30)
+			hasHistoryRecord = true;
+		cursor.close();
+		
+		cursor = DBI.select("SELECT * FROM " + DBI.tableCalendar);
 		cursor.moveToFirst();
 		while(!cursor.isAfterLast())
 		{	try
@@ -169,11 +165,34 @@ public class Schedule extends Activity {
 			      return o1.start.compareTo(o2.start);
 			  }
 		});
-		for(slot i:occupiedslot)
-			System.out.println(i.start + " " + i.end + " " + i.timeofday + " " + i.day);
+		for(int i=0;i<occupiedslot.size();i++)
+		{	slot empty;
+			if(i == 0)
+				empty = new slot(cur,occupiedslot.get(i).start);
+			else
+			{	if(i == occupiedslot.size()-1)
+					empty = new slot(occupiedslot.get(i).end,oneWeek);
+				else
+					empty = new slot(occupiedslot.get(i).end,occupiedslot.get(i+1).start);
+			}
+			if(hasHistoryRecord)
+				if(empty.diff >= AveDuration + 60 && !isBadWeather(empty.date))
+					emptyslots.add(empty);
+			else
+				if(empty.diff >= 120 && !isBadWeather(empty.date))
+					emptyslots.add(empty);
+		}
 		return emptyslots;
 	}
-	
+	public boolean isBadWeather(String date)
+	{	
+		Cursor cursor = DBI.select("SELECT Weather FROM " + DBI.tableWeather + " WHERE Date = '" + date + "'");
+		if(cursor.moveToFirst())
+		{	String wea = cursor.getString(0);
+			return weather.isWeatherPoorCondition(wea);
+		}
+		return false;
+	}
 	public void Compute(int duration)
 	{	boolean hasHistoryRecord = false;
 		Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableHistory);
@@ -182,6 +201,8 @@ public class Schedule extends Activity {
 			hasHistoryRecord = true;
 		cursor.close();
 		ArrayList<slot> emptyslots = getEmptySlot();
+		for(int i=0;i<emptyslots.size();i++)
+			System.out.println(emptyslots.get(i).start + " " + emptyslots.get(i).end);
 		if(hasHistoryRecord)
 		{	
 		}
@@ -394,133 +415,6 @@ public class Schedule extends Activity {
 		return true;
 	}
 	
-	// return an ArrayList of conflicting Id if they collide
-	public ArrayList<String> isScheduleCollidesCalendar() {
-		ArrayList<String> coflictIdList = new ArrayList<String>();
-		Cursor scheduleCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
-		
-		// if exist at least one event
-		if (scheduleCursor.moveToFirst()) {	
-			while(!scheduleCursor.isAfterLast()) {
-				String scheduleDate = scheduleCursor.getString(1);				
-				// select events from calendar which have the same date
-				String query = "SELECT * FROM " + DBI.tableCalendar + " WHERE Date='" + scheduleDate + "'";			
-				Cursor calendarCursor = DBI.select(query);
-				
-				if (calendarCursor.moveToFirst()) {
-					while(!calendarCursor.isAfterLast()) {
-						// conversion to Date type
-						String schId = Integer.toString((scheduleCursor.getInt(0)));
-						String calStart = calendarCursor.getString(2);
-						String schStart = scheduleCursor.getString(2);
-						String calEnd = calendarCursor.getString(3);
-						String schEnd = scheduleCursor.getString(3);
-						
-						try {
-							SimpleDateFormat parser = new SimpleDateFormat("HH:mm:ss", Locale.US);
-							Date calStartDate = parser.parse(calStart);
-							Date calEndDate = parser.parse(calEnd);
-							Date schStartDate = parser.parse(schStart);
-							Date schEndDate = parser.parse(schEnd);
-							// if event slot has overlapping part
-							if ((calStartDate.before(schEndDate) && calStartDate.after(schStartDate)) ||
-									calStartDate.equals(schStartDate) || calStartDate.equals(schEndDate) ||
-									(calEndDate.before(schEndDate) && calEndDate.after(schStartDate)) ||
-									calEndDate.equals(schStartDate) || calEndDate.equals(schEndDate)) {
-								// add an Id to the ArrayList
-								coflictIdList.add(schId);
-							}
-						} catch (ParseException e) {
-							e.printStackTrace();
-						}
-						calendarCursor.moveToNext();
-					}
-				}				
-				scheduleCursor.moveToNext();
-			}
-		}
-		return coflictIdList;
-	}
-	
-	public ArrayList<String> isScheduleCollidesWeather() {
-		ArrayList<String> conflictIdList = new ArrayList<String>();
-		Cursor scheduleCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
-		String weatherText;
-		// if exist at least one event
-		if (scheduleCursor.moveToFirst()) {
-			while(!scheduleCursor.isAfterLast()) {
-				String schId = Integer.toString(scheduleCursor.getInt(0));
-				String scheduleDate = scheduleCursor.getString(1);				
-				// select events from Weather which have the same date
-				String query = "SELECT * FROM " + DBI.tableWeather + " WHERE Date='" + scheduleDate + "'";			
-				Cursor weatherCursor = DBI.select(query);
-				if(weatherCursor.moveToFirst())
-				{	weatherText = weatherCursor.getString(1);
-					// if poor weather condition, push the Id into the list
-					if (weather.isWeatherPoorCondition(weatherText))
-						conflictIdList.add(schId);
-				}
-				scheduleCursor.moveToNext();
-			}
-		}
-		return conflictIdList;
-	}
-	
-	// return # hours of history behind planned schedule
-	public double isProgressBehindSchedule() {
-		double hisSum = 0, schSum = 0;
-		double hrsBehind = 0;
-		Cursor schCursor = DBI.select("SELECT * FROM " + DBI.tableSchedule);
-		Cursor hisCursor = DBI.select("SELECT * FROM " + DBI.tableHistory);
-		Date currDate = new Date();
-		SimpleDateFormat timeParser = new SimpleDateFormat("HH:mm:ss", Locale.US);
-		SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-		
-		// calculate scheduled exercise duration before today
-		if (schCursor.moveToFirst()) {
-			while(!schCursor.isAfterLast()) {
-				try {				
-					String schDate = schCursor.getString(1);
-					String schStart = schCursor.getString(2);
-					String schEnd = schCursor.getString(3);
-					Date schDateDate = dateParser.parse(schDate);
-					Date schStartDate = timeParser.parse(schStart);
-					Date schEndDate = timeParser.parse(schEnd);
-					
-					// if the dates from Schedule is before today
-					if (schDateDate.before(currDate)) {
-						long diff = schEndDate.getTime() - schStartDate.getTime();
-						long diffHours = diff / (60 * 60 * 1000) % 24;
-						schSum += ((double) diffHours);
-					}
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
-				schCursor.moveToNext();
-			}
-		}		
-		// calculate the actual exercise duration before today
-		if (hisCursor.moveToFirst()) {
-			while(!hisCursor.isAfterLast()) {
-				try {
-					String hisDate = hisCursor.getString(0);
-					double duration = hisCursor.getDouble(3);
-					Date hisDateDate = dateParser.parse(hisDate);
-					
-					// if dates from History is before today
-					if (hisDateDate.before(currDate)) {
-						hisSum += duration;
-					}
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
-				hisCursor.moveToNext();
-			}
-		}
-		hrsBehind = schSum - hisSum;
-		return hrsBehind;
-	}
-	
 	private void displaySchedule() {
 		List<String> listValues = new ArrayList<String>();
 		String query = "SELECT * FROM " + DBI.tableSchedule + " ORDER BY Date ASC";
@@ -538,56 +432,34 @@ public class Schedule extends Activity {
 		listview.setAdapter(adapter);
 	}
 
-	@SuppressWarnings("deprecation")
 	private void getHistoryPattern()
 	{	try
-		{	ArrayList<HistoryData> historyData = new ArrayList<HistoryData>();
+		{	ArrayList<HistoryData> history = new ArrayList<HistoryData>();
+			pattern = new HistoryPattern();
 			Cursor cursor = DBI.select("SELECT Date,Duration,Start FROM " + DBI.tableHistory);
 			cursor.moveToFirst();
 			AveDuration = 0;
 			double sum = 0;
-			int count = 0;
+			num_days = 0;
 			Calendar cal = Calendar.getInstance();
-			cal.add(Calendar.DATE, -30);
+			cal.add(Calendar.DATE, -90);
 			Date a_month_ago = cal.getTime();
-			count_Mon = count_Tue = count_Wed = count_Thu = count_Fri = count_Sat = count_Sun = 0;
-			count_morning = count_afternoon = count_evening = count_midnight = 0;
 			while(!cursor.isAfterLast())
-			{	HistoryData history = new HistoryData(cursor.getString(0),cursor.getString(2),"",cursor.getDouble(1),0,0); 
-				historyData.add(history);
+			{	if(new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(0)+cursor.getString(2)).after(a_month_ago))
+				{	HistoryData historyObj = new HistoryData(cursor.getString(0),cursor.getString(2),"",cursor.getDouble(1),0,0); 
+					history.add(historyObj);
+				}
 				cursor.moveToNext();
 			}
 			cursor.close();
-			for(HistoryData data : historyData)
+			for(HistoryData data : history)
 			{	sum += data.duration;
-				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Mon"))
-					count_Mon++;
-				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Tue"))
-					count_Tue++;
-				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Wed"))
-					count_Wed++;
-				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Thu"))
-					count_Thu++;
-				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Fri"))
-					count_Fri++;
-				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Sat"))
-					count_Sat++;
-				if(new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).equals("Sun"))
-					count_Sun++;
-				if((new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(data.date)).after(a_month_ago))
-					count++;
-				if(0 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() < 6)
-					count_midnight++;
-				if(6 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() < 12)
-					count_morning++;
-				if(12 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() < 18)
-					count_afternoon++;
-				if(18 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(data.start).getHours() <= 23)
-					count_evening++;
+				pattern.countIncrement(data.date, data.start);
 			}
-			AveDuration = sum / historyData.size();
-			if(count != 0)
-				num_days = 30 / count;
+			if(history.size() != 0)
+			{	AveDuration = sum / history.size();
+				num_days = 90 / history.size();
+			}
 		}
 		catch(Exception e)
 		{	e.printStackTrace(); }

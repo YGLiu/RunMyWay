@@ -7,8 +7,10 @@ import java.util.Locale;
 public class slot {
 	public Date start;
 	public Date end;
+	public String date;
 	public String day;
 	public String timeofday;
+	public double diff;
 	@SuppressWarnings("deprecation")
 	public slot(Date start,Date end)
 	{	this.start = start;
@@ -35,5 +37,7 @@ public class slot {
 			this.timeofday = "afternoon";
 		if(18 <= start.getHours() && start.getHours() <= 23)
 			this.timeofday = "evening";
+		this.date = new SimpleDateFormat("yyyy-MM-dd",Locale.US).format(start);
+		diff = (double)(((long)end.getTime() - (long) start.getTime())/1000/60);
 	}
 }
