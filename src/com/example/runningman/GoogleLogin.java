@@ -156,16 +156,6 @@ public class GoogleLogin extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
-	@Override
-	public void onStop() {
-		super.onStop();
-		
-		// close database connection
-		if (this.DBI != null) {
-			DBI.close();
-		}
-	}
 	 
 	class JsInterface {
 		// constructor
