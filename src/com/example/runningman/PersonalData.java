@@ -53,7 +53,7 @@ public class PersonalData extends Activity implements LocationListener{
 		Cursor cursor = DBI.select(query);
 		
 		// debugging purpose
-		Log.d("# rows", Integer.toString(cursor.getCount()));
+		// Log.d("# rows", Integer.toString(cursor.getCount()));
 		
 		EditText nameEditText = (EditText) findViewById(R.id.editTextUserName);
 		RadioGroup genderRadioGrp = (RadioGroup) findViewById(R.id.radioGroupGender);
@@ -97,8 +97,8 @@ public class PersonalData extends Activity implements LocationListener{
 				targetRadioGrp.check(R.id.radioForFun);
 			}
 			
-			Log.d("longtitude", Double.toString(longtitude));
-			Log.d("latitude", Double.toString(latitude));
+			// Log.d("longtitude", Double.toString(longtitude));
+			// Log.d("latitude", Double.toString(latitude));
 			
 			// check if the home address has been set or not
 			if (longtitude == 0 && latitude == 0) {
