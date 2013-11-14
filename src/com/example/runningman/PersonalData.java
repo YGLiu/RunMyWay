@@ -187,10 +187,6 @@ public class PersonalData extends Activity implements LocationListener{
 		}
 		
 		String bday = bdayEditText.getText().toString();
-		if (bday.equals("")) {
-			isInputValid = false;
-			alertMsg += "\nBirthday is mandatory";
-		}
 		try {
 			dateParser.parse(bday);
 		} catch (ParseException e) {
