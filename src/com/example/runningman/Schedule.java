@@ -478,7 +478,8 @@ public class Schedule extends Activity {
 		return true;
 	}
 	
-	private void displaySchedule() {
+	private void displaySchedule() 
+	{
 		List<String> listValues = new ArrayList<String>();
 		String query = "SELECT * FROM " + DBI.tableSchedule + " ORDER BY Date ASC";
 		Cursor cursor = DBI.select(query);
