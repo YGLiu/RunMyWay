@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
         // generate dummy history records
         DBInterface DBI = new DBInterface(this);
         DBI.dummyHistory(true);
-        dummyschedule();
+        //dummyschedule();
         GoogleLogin.setOnClickListener(new View.OnClickListener(){
 			@Override
 			public void onClick(View v) {

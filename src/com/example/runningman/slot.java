@@ -10,7 +10,6 @@ public class slot {
 	public String date;
 	public String day;
 	public String timeofday;
-	public double diff;
 	@SuppressWarnings("deprecation")
 	public slot(Date start,Date end)
 	{	this.start = start;
@@ -38,6 +37,9 @@ public class slot {
 		if(18 <= start.getHours() && start.getHours() <= 23)
 			this.timeofday = "evening";
 		this.date = new SimpleDateFormat("yyyy-MM-dd",Locale.US).format(start);
-		diff = (double)(((long)end.getTime() - (long) start.getTime())/1000/60);
+	}
+	public double getDiff()
+	{
+		return (double)(((long)end.getTime() - (long) start.getTime())/1000/60);
 	}
 }

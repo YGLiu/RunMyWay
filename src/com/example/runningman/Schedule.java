@@ -29,7 +29,7 @@ public class Schedule extends Activity {
 	private DBInterface DBI;
 	private double AveDuration;
 	private HistoryPattern pattern;
-	private int num_days;
+	private double num_days;
 	private Weather weather;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +125,7 @@ public class Schedule extends Activity {
 		Date oneWeek = cal.getTime();
 		
 		boolean hasHistoryRecord = false;
+		boolean sameDay;
 		Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableHistory);
 		cursor.moveToFirst();
 		if(cursor.getInt(0) > 30)
@@ -175,12 +176,26 @@ public class Schedule extends Activity {
 				else
 					empty = new slot(occupiedslot.get(i).end,occupiedslot.get(i+1).start);
 			}
+			Calendar calStart = Calendar.getInstance();
+			Calendar calEnd = Calendar.getInstance();
+			calStart.setTime(empty.start);
+			calEnd.setTime(empty.end);
+			sameDay = calStart.get(Calendar.YEAR) == calEnd.get(Calendar.YEAR) &&
+					  calStart.get(Calendar.DAY_OF_YEAR) == calEnd.get(Calendar.DAY_OF_YEAR);
+			if(!sameDay)
+			{	calStart.set(Calendar.HOUR_OF_DAY, 23);
+				calStart.set(Calendar.MINUTE, 59);
+				calStart.set(Calendar.SECOND, 59);
+				empty.end = calStart.getTime();
+			}
 			if(hasHistoryRecord)
-				if(empty.diff >= AveDuration + 60 && !isBadWeather(empty.date))
+			{	if(empty.getDiff() >= AveDuration + 30 && !isBadWeather(empty.date))
 					emptyslots.add(empty);
+			}
 			else
-				if(empty.diff >= 120 && !isBadWeather(empty.date))
+			{	if(empty.getDiff() >= 90 && !isBadWeather(empty.date))
 					emptyslots.add(empty);
+			}
 		}
 		return emptyslots;
 	}
@@ -195,6 +210,7 @@ public class Schedule extends Activity {
 	}
 	public void Compute(int duration)
 	{	boolean hasHistoryRecord = false;
+		int num;
 		Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableHistory);
 		cursor.moveToFirst();
 		if(cursor.getInt(0) > 30)
@@ -203,12 +219,51 @@ public class Schedule extends Activity {
 		ArrayList<slot> emptyslots = getEmptySlot();
 		for(int i=0;i<emptyslots.size();i++)
 			System.out.println(emptyslots.get(i).start + " " + emptyslots.get(i).end);
+		System.out.println(AveDuration + " " + num_days);
 		if(hasHistoryRecord)
-		{	
+		{	//rank emptyslots based on historypattern
+			ArrayList<slot> sortedEmptyslots = new ArrayList<slot>();
+			for(int i=0;i<pattern.historyPattern.size();i++)
+			{	for(int j=0;j<emptyslots.size();j++)
+				{	if(emptyslots.get(j).day.equals(pattern.historyPattern.get(i).day_of_week) && 
+						emptyslots.get(j).timeofday.equals(pattern.historyPattern.get(i).time_of_day))
+						sortedEmptyslots.add(emptyslots.get(j));
+				}
+			}
+			num = Math.min(sortedEmptyslots.size(), (int) Math.floor(duration/AveDuration));
+			PlanSchedule(sortedEmptyslots,num,AveDuration);
 		}
 		else
-		{
-			
+		{	
+			for(int i=0;i<emptyslots.size();i++)
+			{	if(!emptyslots.get(i).timeofday.equals("evening"))
+				{	emptyslots.remove(i);
+					i--;
+				}
+			}
+			num = Math.min(emptyslots.size(), (int) Math.ceil(duration/60));
+			System.out.println("No history record" + num );
+			PlanSchedule(emptyslots,num,60);
+		}
+	}
+	public void PlanSchedule(ArrayList<slot> emptyslots,int num,double duration)
+	{	for(int i=0;i<num && i<emptyslots.size();i++)
+		{	Cursor cursor = DBI.select("SELECT COUNT(*) FROM " + DBI.tableSchedule + " WHERE Date = '" + emptyslots.get(i).date + "'");
+			cursor.moveToFirst();
+			if(cursor.getInt(0) > 0)
+			{	emptyslots.remove(i);
+				i--;
+				continue;
+			}
+			String start = new SimpleDateFormat("HH:mm:ss",Locale.US).format(new Date(emptyslots.get(i).start.getTime() + 15*60*1000));
+			String end = new SimpleDateFormat("HH:mm:ss",Locale.US).format(new Date(emptyslots.get(i).start.getTime() + 15*60*1000 + (int)duration*60*1000));
+			String date = emptyslots.get(i).date;
+			ContentValues CV = new ContentValues();
+			CV.put("Date", date);
+			CV.put("Start", start);
+			CV.put("End", end);
+			CV.put("Status", "UPCOMING");
+			DBI.insert(DBI.tableSchedule, CV);
 		}
 	}
 	public int removeConflictedEvents()
@@ -236,9 +291,9 @@ public class Schedule extends Activity {
 			hasHistoryRecord = true;
 		cursor.close();
 		if(hasHistoryRecord)
-			Compute((int)Math.ceil(AveDuration*7/num_days));
+			Compute((int)(AveDuration*7/num_days));
 		else
-			Compute(120);
+			Compute(180);
 		displaySchedule();
 	}
 	public void RecomputeSchedule()
@@ -442,7 +497,7 @@ public class Schedule extends Activity {
 			double sum = 0;
 			num_days = 0;
 			Calendar cal = Calendar.getInstance();
-			cal.add(Calendar.DATE, -90);
+			cal.add(Calendar.DATE, -180);
 			Date a_month_ago = cal.getTime();
 			while(!cursor.isAfterLast())
 			{	if(new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(0)+cursor.getString(2)).after(a_month_ago))
@@ -458,8 +513,11 @@ public class Schedule extends Activity {
 			}
 			if(history.size() != 0)
 			{	AveDuration = sum / history.size();
-				num_days = 90 / history.size();
+				num_days = (double)180/(double)history.size();
 			}
+			pattern.sort();
+			for(int i=0;i<pattern.historyPattern.size();i++)
+				System.out.println(pattern.historyPattern.get(i).day_of_week + pattern.historyPattern.get(i).time_of_day + pattern.historyPattern.get(i).frequency);
 		}
 		catch(Exception e)
 		{	e.printStackTrace(); }

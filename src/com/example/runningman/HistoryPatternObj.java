@@ -10,10 +10,6 @@ public class HistoryPatternObj {
 		this.time_of_day = time_of_day;
 		frequency = 0;
 	}
-	public void setFrequency(int frequency)
-	{
-		this.frequency = frequency;
-	}
 	public void incFrequency()
 	{
 		this.frequency++;

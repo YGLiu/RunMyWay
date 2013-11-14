@@ -2,6 +2,8 @@ package com.example.runningman;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Locale;
 
 public class HistoryPattern {
@@ -43,18 +45,27 @@ public class HistoryPattern {
 		{	String day_of_week, time_of_day = null;
 			day_of_week = new SimpleDateFormat("EEE",Locale.US).format(new SimpleDateFormat("yyyy-MM-dd",Locale.US).parse(date));
 			if(0 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() < 6)
-				time_of_day = "morning";
-			if(6 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() < 12)
-				time_of_day = "afternoon";
-			if(12 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() < 18)
-				time_of_day = "evening";
-			if(18 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() <= 23)
 				time_of_day = "midnight";
+			if(6 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() < 12)
+				time_of_day = "morning";
+			if(12 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() < 18)
+				time_of_day = "afternoon";
+			if(18 <= new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() && new SimpleDateFormat("HH:mm:ss",Locale.US).parse(start).getHours() <= 23)
+				time_of_day = "evening";
 			for(HistoryPatternObj obj : historyPattern)
 				if(obj.day_of_week.equals(day_of_week) && obj.time_of_day.equals(time_of_day))
 					obj.incFrequency();
 		}
 		catch(Exception e)
 		{	e.printStackTrace();}
+	}
+	public void sort()
+	{	Collections.sort(historyPattern, new Comparator<HistoryPatternObj>() 
+		{
+		 	public int compare(HistoryPatternObj o1, HistoryPatternObj o2) 
+		 	{
+		 		return o2.frequency - o1.frequency;
+		 	}
+		});
 	}
 }
