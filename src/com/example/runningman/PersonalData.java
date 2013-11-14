@@ -38,6 +38,16 @@ public class PersonalData extends Activity implements LocationListener{
 		return true;
 	}
 	
+	@Override
+	public void onStop() {
+		super.onStop();
+		
+		// close database connection
+		if (this.DBI != null) {
+			DBI.close();
+		}
+	}
+	
 	public void loadPersonalDataFromDB() {
 		String query = "SELECT * FROM " + DBI.tableUser;
 		Cursor cursor = DBI.select(query);
@@ -207,6 +217,7 @@ public class PersonalData extends Activity implements LocationListener{
 			else {
 				DBI.insert(DBI.tableUser, cv);
 			}
+			cursor.close();
 			showAlert("Notification", "Personal data updated.");
 			// load the database again and check availability of home address
 			this.loadPersonalDataFromDB();
