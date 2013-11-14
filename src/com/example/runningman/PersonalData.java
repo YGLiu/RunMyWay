@@ -1,5 +1,9 @@
 package com.example.runningman;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
@@ -141,18 +145,20 @@ public class PersonalData extends Activity implements LocationListener{
 	}
 	
 	public void savePersonalDataInDB() {
+		boolean isInputValid = true;
+		String alertMsg = "";
+		SimpleDateFormat dateParser = new SimpleDateFormat("ddMMyyyy", Locale.US);
 		EditText nameEditText = (EditText) findViewById(R.id.editTextUserName);
 		RadioGroup genderRadioGrp = (RadioGroup) findViewById(R.id.radioGroupGender);
 		EditText heightEditText = (EditText) findViewById(R.id.editTextHeight);
 		EditText weightEditText = (EditText) findViewById(R.id.editTextWeight);
 		EditText bdayEditText = (EditText) findViewById(R.id.editTextBirthday);
-		RadioGroup targetRadioGrp = (RadioGroup) findViewById(R.id.radioGroupPurpose);
+		RadioGroup targetRadioGrp = (RadioGroup) findViewById(R.id.radioGroupPurpose);		
 		
-		String uid = null;
-		try {
-			uid = nameEditText.getText().toString();
-		} catch(Exception e) {
-			showAlert("Error", "Name is mandatory");
+		String uid = nameEditText.getText().toString();
+		if (uid.equals("")) {
+			isInputValid = false;
+			alertMsg += "\nName is mandatory.";
 		}
 		
 		String gender = null;
@@ -168,21 +174,30 @@ public class PersonalData extends Activity implements LocationListener{
 		try {
 			height = Double.parseDouble(heightEditText.getText().toString());
 		} catch (Exception e) {
-			showAlert("Error", "Height is mandatory");
+			isInputValid = false;
+			alertMsg += "\nHeight is mandatory.";
 		}
 		
 		double weight = -1;
 		try {
 			weight = Double.parseDouble(weightEditText.getText().toString());
 		} catch (Exception e) {
-			showAlert("Error", "Weight is mandatory");
+			isInputValid = false;
+			alertMsg += "\nWeight is mandatory.";
 		}
 		
-		String bday = null;
+		String bday = bdayEditText.getText().toString();
+		if (bday.equals("")) {
+			isInputValid = false;
+			alertMsg += "\nBirthday is mandatory";
+		}
 		try {
-			bday = bdayEditText.getText().toString();
-		} catch (Exception e) {
-			showAlert("Error", "Birthday is mandatory");
+			dateParser.parse(bday);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			isInputValid = false;
+			alertMsg += "\nInvalid birthday format.";
+			e.printStackTrace();
 		}
 		
 		String target;
@@ -197,7 +212,7 @@ public class PersonalData extends Activity implements LocationListener{
 			target = "Fun";
 		}
 		
-		if (uid != null && height > 0 && weight > 0 && bday != null) {
+		if (isInputValid) {
 			ContentValues cv = new ContentValues();
 			cv.put("UID", uid);
 			cv.put("Gender", gender);
@@ -220,6 +235,9 @@ public class PersonalData extends Activity implements LocationListener{
 			showAlert("Notification", "Personal data updated.");
 			// load the database again and check availability of home address
 			this.loadPersonalDataFromDB();
+		}
+		else {
+			showAlert("Error", alertMsg);
 		}
 	}
 	
