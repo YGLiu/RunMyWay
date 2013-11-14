@@ -27,19 +27,28 @@ public class DBInterface{
 	  dbHelper = new Sql(context);
 	  database = dbHelper.getWritableDatabase();
   }
+  
+  public void close () {
+	  this.dbHelper.close();
+	  this.database.close();
+  }
+  
   public long insert(String table, ContentValues CV)
   {		
 	  	return database.insert(table, null, CV);
   }
+  
   public int delete(String table,String whereClause)
   {
   		return database.delete(table, whereClause, null);
   }
+  
   public Cursor select(String query)
   {		Cursor cursor = null;
   		cursor = database.rawQuery(query,null);
   		return cursor;
   }
+  
   public int update(String table,ContentValues CV, String whereClause)
   {	
   		return database.update(table,CV,whereClause,null);
@@ -106,8 +115,30 @@ public class DBInterface{
 		  }
 		  csr.close();
 	  }
+	 else if (tableName.equals(this.tableWeather)) {
+		  String query = "SELECT * FROM " + this.tableWeather;
+		  Cursor csr = this.select(query);
+		  if (csr.moveToFirst()) {
+			  while(!csr.isAfterLast()) {
+				  String date = csr.getString(0);
+				  String weather = csr.getString(1);
+				  double temperature = csr.getDouble(2);
+				  String line = date + " " + weather + " " + Double.toString(temperature);
+				  Log.v(this.tableWeather + "[" + Integer.toString(csr.getPosition()) + "]", line);
+				  csr.moveToNext();
+			  }
+		  }
+		  else {
+			  Log.v("[empty table]", "Empty " + this.tableWeather + " Table.");
+		  }
+		  csr.close();
+	  }
+	 else {
+		 Log.v("[Non-existing table]", "Please check your table name.");
+	 }
   }
   
+  // generate dummy data for testing purpose
   public void dummyHistory(boolean clearFlag) {
 	  if (clearFlag) {
 		  this.delete(this.tableHistory, null);
@@ -151,7 +182,7 @@ public class DBInterface{
 		  ContentValues cv = new ContentValues();
 		  String dateString = dateParser.format(dateStk.pop());
 		  cv.put("Date", dateString);
-		  Log.d("date", dateString);
+		  // Log.d("date", dateString);
 		  cv.put("Start", startTime);
 		  cv.put("End", endTime);
 		  cv.put("Duration", duration);

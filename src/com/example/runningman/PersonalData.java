@@ -38,12 +38,22 @@ public class PersonalData extends Activity implements LocationListener{
 		return true;
 	}
 	
+	@Override
+	public void onStop() {
+		super.onStop();
+		
+		// close database connection
+		if (this.DBI != null) {
+			DBI.close();
+		}
+	}
+	
 	public void loadPersonalDataFromDB() {
 		String query = "SELECT * FROM " + DBI.tableUser;
 		Cursor cursor = DBI.select(query);
 		
 		// debugging purpose
-		Log.d("# rows", Integer.toString(cursor.getCount()));
+		// Log.d("# rows", Integer.toString(cursor.getCount()));
 		
 		EditText nameEditText = (EditText) findViewById(R.id.editTextUserName);
 		RadioGroup genderRadioGrp = (RadioGroup) findViewById(R.id.radioGroupGender);
@@ -87,8 +97,8 @@ public class PersonalData extends Activity implements LocationListener{
 				targetRadioGrp.check(R.id.radioForFun);
 			}
 			
-			Log.d("longtitude", Double.toString(longtitude));
-			Log.d("latitude", Double.toString(latitude));
+			// Log.d("longtitude", Double.toString(longtitude));
+			// Log.d("latitude", Double.toString(latitude));
 			
 			// check if the home address has been set or not
 			if (longtitude == 0 && latitude == 0) {
@@ -207,6 +217,7 @@ public class PersonalData extends Activity implements LocationListener{
 			else {
 				DBI.insert(DBI.tableUser, cv);
 			}
+			cursor.close();
 			showAlert("Notification", "Personal data updated.");
 			// load the database again and check availability of home address
 			this.loadPersonalDataFromDB();

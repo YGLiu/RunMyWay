@@ -4,6 +4,11 @@ RunMyWay
 ### Introduction
 This is a student project done by a group of students from National University of Singapore (NUS) who study the 
 course of CS4274 (Multimedia and Mobile Networking).
+Its product is an Android application for runners to better schedule and monitor their running exercises.
+
+### Acknowledgement
+Thanks to Assoc Prof [Pung Hung Keng](https://www.comp.nus.edu.sg/~punghk/)
+and Cavatur Pranav Phalgun for their assistance and review on this project.
 
 ### Setup
 
@@ -34,6 +39,20 @@ Set the API version to 4.3 and add these two folders into the project as librari
 * GraphView-master
 
 To use Google Map API
+
+### Features
+
+* Generate and record real-time statistics during users’ running exercises.
+* Provide graphic display for users’ exercise histories.
+* Determine and recommend optimal schedule based on analysis of the users’ exercise history,
+weather forecast and upcoming events in the users’ calendar.
+* Detect possible collisions of exercise schedule with changes in the users’ calendar or weather,
+and re-schedule sessions where necessary.
+* Push notifications to the users before the start of a scheduled exercise session
+if the application believes that there is a high probability that the user will follow the schedule.
+This decision is made based on user’s current context such as location and weather.
+* Monitor the completeness of the schedule and notify the users of missed sessions.
+The users will decide whether or not to re-schedule the missed sessions.
 
 ### Contact developers
 To report any issue in the program,
