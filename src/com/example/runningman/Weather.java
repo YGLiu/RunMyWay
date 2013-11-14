@@ -90,7 +90,7 @@ public class Weather implements YahooWeatherInfoListener {
 	public boolean isWeatherPoorCondition(String weatherText) {
 		boolean result = false;
 		for (int i = 0; i < this.poorConditionArray.length; i++) {
-			if(weatherText.toLowerCase().contains(this.poorConditionArray[i])){
+			if(weatherText.toLowerCase(Locale.getDefault()).contains(this.poorConditionArray[i])){
 				result = true;
 				return result;
 			}
