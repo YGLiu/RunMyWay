@@ -1,8 +1,10 @@
 package com.example.runningman;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Random;
 import java.util.Stack;
 
 import android.content.ContentValues;
@@ -150,12 +152,15 @@ public class DBInterface{
 	  Calendar cal = Calendar.getInstance();
 	  cal.setTime(date);
 	  Stack<Date> dateStk = new Stack<Date>();
+	  SimpleDateFormat dayParser = new SimpleDateFormat("EEE", Locale.US);
+	  SimpleDateFormat timeParser = new SimpleDateFormat("HH:mm:ss", Locale.US);
+	  Random randomDuration = new Random(date.getTime());
+	  Random randomDistance = new Random();
 	  
 	  while(evenDaysCount < 60) {
 		  cal.add(Calendar.DATE, -1);
 		  date = cal.getTime();
-		  
-		  SimpleDateFormat dayParser = new SimpleDateFormat("EEE", Locale.US);		  
+		  		  
 		  String day = dayParser.format(date);
 		  		  
 		  if(day.equalsIgnoreCase("tue") || day.equalsIgnoreCase("thu") || day.equalsIgnoreCase("sat")) {
@@ -166,29 +171,41 @@ public class DBInterface{
 			  oddDaysCount++;
 			  dateStk.push(date);
 		  }
-		  
 	  }
 	  
 	  // use stack to reverse the date order
 	  while(!dateStk.empty()) {
 		  String startTime = "20:00:00";
-		  String endTime = "22:00:00";
-		  double duration = 120;
-		  final double minDist = 2 * 7000;
-		  final double maxDist = 2 * 11000;
-		  double dist = minDist + (Math.random() * (maxDist - minDist));
-		  double aveSpeed = dist / 2000;		  
-		  SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd", Locale.US);		  	  
-		  ContentValues cv = new ContentValues();
-		  String dateString = dateParser.format(dateStk.pop());
-		  cv.put("Date", dateString);
-		  // Log.d("date", dateString);
-		  cv.put("Start", startTime);
-		  cv.put("End", endTime);
-		  cv.put("Duration", duration);
-		  cv.put("Distance", dist);
-		  cv.put("AveSpeed", aveSpeed);
-		  this.insert(tableHistory, cv);
+		  try {
+			  Date startDate = timeParser.parse(startTime);
+			  final double minDrtn = 45;
+			  final double maxDrtn = 90;			  
+			  double duration = minDrtn + (randomDuration.nextFloat() * (maxDrtn - minDrtn));
+			  cal.setTime(startDate);
+			  cal.add(Calendar.MINUTE, (int) duration);
+			  Date endDate = cal.getTime();
+			  // Log.d("endDate", endDate.toString());
+			  String endTime = timeParser.format(endDate);
+			  // Log.d("[endTime]", endTime);
+			  final double minDist = 2 * 7000;
+			  final double maxDist = 2 * 10000;
+			  double dist = minDist + (randomDistance.nextFloat() * (maxDist - minDist));
+			  double aveSpeed = dist / 1000 / (duration / 60);
+			  SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd", Locale.US);		  	  
+			  ContentValues cv = new ContentValues();
+			  String dateString = dateParser.format(dateStk.pop());
+			  cv.put("Date", dateString);
+			  // Log.d("date", dateString);
+			  cv.put("Start", startTime);
+			  cv.put("End", endTime);
+			  cv.put("Duration", duration);
+			  cv.put("Distance", dist);
+			  cv.put("AveSpeed", aveSpeed);
+			  this.insert(tableHistory, cv);
+		  } catch (ParseException e) {
+			  // TODO Auto-generated catch block
+			  e.printStackTrace();
+		  }
 	  }
 	  this.verboseTable(tableHistory);
   }
