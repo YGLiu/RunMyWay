@@ -187,8 +187,8 @@ public class DBInterface{
 			  // Log.d("endDate", endDate.toString());
 			  String endTime = timeParser.format(endDate);
 			  // Log.d("[endTime]", endTime);
-			  final double minDist = 2 * 7000;
-			  final double maxDist = 2 * 10000;
+			  final double minDist = duration * 6000;
+			  final double maxDist = duration * 90000;
 			  double dist = minDist + (randomDistance.nextFloat() * (maxDist - minDist));
 			  double aveSpeed = dist / 1000 / (duration / 60);
 			  SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd", Locale.US);		  	  
