@@ -32,7 +32,7 @@ public class NotifyService extends IntentService {
     	    //.setNumber(++myNumber)
     	    .setDefaults(Notification.DEFAULT_SOUND)
     	    .setAutoCancel(true)
-    	    .setContentText("You've received " + data + " messages.")
+    	    .setContentText(data)
     	    .setContentIntent(contentIntent)
     	    .setSmallIcon(R.drawable.ic_launcher);
     	//int numMessages = 0;
@@ -49,7 +49,7 @@ public class NotifyService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		String data = intent.getStringExtra("abc");
+		String data = intent.getStringExtra("Message");
 		noti(this, data);
 	}
 	

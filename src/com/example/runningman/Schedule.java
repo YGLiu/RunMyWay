@@ -11,9 +11,12 @@ import java.util.List;
 import java.util.Locale;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
@@ -264,6 +267,11 @@ public class Schedule extends Activity {
 			CV.put("End", end);
 			CV.put("Status", "UPCOMING");
 			DBI.insert(DBI.tableSchedule, CV);
+			try
+			{	setAlarm(new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(date+start).getTime());
+			}
+			catch(Exception e)
+			{	e.printStackTrace();}
 		}
 	}
 	public int removeConflictedEvents()
@@ -521,5 +529,14 @@ public class Schedule extends Activity {
 		}
 		catch(Exception e)
 		{	e.printStackTrace(); }
+	}
+	public void setAlarm(long time)
+	{	Intent myIntent = new Intent(getApplicationContext(), NotifyService.class);
+	    myIntent.putExtra("Message", "You have a running session in 15 minutes");
+	    myIntent.setAction("com.example.runningman.NotifyAction");
+	    AlarmManager alarms ;
+	    PendingIntent alarmIntent = PendingIntent.getService(getApplicationContext(), 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+	    alarms = (AlarmManager) getSystemService(ALARM_SERVICE);
+	    alarms.set(AlarmManager.RTC, time-15*60*1000, alarmIntent);
 	}
 }

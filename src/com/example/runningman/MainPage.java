@@ -76,7 +76,7 @@ public class MainPage extends Activity implements LocationListener{
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main_page);
-		
+	
         startView = (TextView) findViewById(R.id.startTime);
         endView = (TextView) findViewById(R.id.endTime);   
         
@@ -92,7 +92,6 @@ public class MainPage extends Activity implements LocationListener{
         handler = new Handler(){
     		@Override
     		public void handleMessage(Message msg) {
-    			// TODO Auto-generated method stub
     			switch(msg.what) {
     			case 1:
     				mlCount++;
@@ -190,9 +189,6 @@ public class MainPage extends Activity implements LocationListener{
 		@SuppressLint("SimpleDateFormat")
 		@Override
 		public void onClick(View v) {
-			// TODO Auto-generated method stub
-			//Log.i(MYTIMER_TAG, "Start/Pause is clicked.");
-			
 			if(IsNotFirstRun == 0)
 			{
 				//flag you need 
@@ -216,7 +212,6 @@ public class MainPage extends Activity implements LocationListener{
 					task = new TimerTask() {
 						@Override
 						public void run() {
-							// TODO Auto-generated method stub
 							if (null == msg) {
 								msg = new Message();
 							} else {
@@ -257,8 +252,6 @@ public class MainPage extends Activity implements LocationListener{
 		@SuppressLint("SimpleDateFormat")
 		@Override
 		public void onClick(View v) {
-			// TODO Auto-generated method stub
-			//Log.i(MYTIMER_TAG, "Stop is clicked.");
 			if(IsNotFirstRun == 1)
 			{
 				//flag you need 
@@ -288,7 +281,6 @@ public class MainPage extends Activity implements LocationListener{
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		// TODO Auto-generated method stub
 		if (KeyEvent.KEYCODE_MENU == keyCode) {
 			super.openOptionsMenu();  
 			// Stop timer
@@ -345,22 +337,13 @@ public class MainPage extends Activity implements LocationListener{
 			showRoute();
     }
 	@Override
-	public void onProviderDisabled(String arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void onProviderDisabled(String arg0) {}
 
 	@Override
-	public void onProviderEnabled(String arg0) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void onProviderEnabled(String arg0) {}
 
 	@Override
-	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {}
 	private void showRoute()
 	{	if(route != null)
 			route.remove();
@@ -406,5 +389,5 @@ public class MainPage extends Activity implements LocationListener{
     public void history(View view) {
     	Intent intent = new Intent(this, History.class);
     	startActivity(intent);
-    }	
+    }
 }
