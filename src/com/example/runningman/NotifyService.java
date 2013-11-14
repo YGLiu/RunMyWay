@@ -10,7 +10,6 @@ public class NotifyService extends IntentService {
 
 	public NotifyService() {
 		super("NotifyService");
-		// TODO Auto-generated constructor stub
 	}
 
 
@@ -22,7 +21,7 @@ public class NotifyService extends IntentService {
     	int notifyID = 1;
     	
     	Context context = getApplicationContext();
-    	Intent notificationIntent = new Intent(context, MainPage.class);
+    	Intent notificationIntent = new Intent(context, MainActivity.class);
     	PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
     	//int myNumber = 1;
     	Notification.Builder mNotifyBuilder = new Notification.Builder(myContext)

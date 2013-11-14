@@ -31,6 +31,6 @@
         android:id="@+id/buttonNotiTest"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Notification Test" />
+        android:text="Add dummy schedule" />
 
 </LinearLayout>

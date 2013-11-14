@@ -262,9 +262,10 @@ public class PersonalData extends Activity implements LocationListener{
 	// write Lng and Lat into DB
 	private void writeLocationDB() {
 		ContentValues cv = new ContentValues();
-		cv.put("Longtitude", this.Lng);
-		cv.put("Latitude", this.Lat);
-		
+		//cv.put("Longtitude", this.Lng);
+		//cv.put("Latitude", this.Lat);
+		cv.put("Longtitude", 1);
+		cv.put("Latitude", 1);
 		String query = "SELECT * FROM " + DBI.tableUser;
 		Cursor cursor = DBI.select(query);
 		// if table is not empty, update it

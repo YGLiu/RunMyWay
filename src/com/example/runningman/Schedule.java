@@ -533,7 +533,7 @@ public class Schedule extends Activity {
 	}
 	public void setAlarm(long time)
 	{	Intent myIntent = new Intent(getApplicationContext(), NotifyService.class);
-	    myIntent.putExtra("Message", "You have a running session in 15 minutes");
+	    myIntent.putExtra("Message", "You have a message");
 	    myIntent.setAction("com.example.runningman.NotifyAction");
 	    AlarmManager alarms ;
 	    PendingIntent alarmIntent = PendingIntent.getService(getApplicationContext(), 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
