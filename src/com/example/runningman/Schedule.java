@@ -141,7 +141,7 @@ public class Schedule extends Activity {
 		{	try
 			{	Date eventStart = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(0) + cursor.getString(1));
 				Date eventEnd = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(0) + cursor.getString(2));
-				if(eventStart.after(cur) && eventStart.before(oneWeek))
+				if(eventEnd.after(cur) && eventStart.before(oneWeek))
 					occupiedslot.add(new slot(eventStart,eventEnd));
 				cursor.moveToNext();
 			}
@@ -156,7 +156,7 @@ public class Schedule extends Activity {
 		{	try
 			{	Date eventStart = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(1) + cursor.getString(2));
 				Date eventEnd = new SimpleDateFormat("yyyy-MM-ddHH:mm:ss",Locale.US).parse(cursor.getString(1) + cursor.getString(3));
-				if(eventStart.after(cur) && eventStart.before(oneWeek))
+				if(eventEnd.after(cur) && eventStart.before(oneWeek))
 					occupiedslot.add(new slot(eventStart,eventEnd));
 				cursor.moveToNext();
 			}
@@ -233,7 +233,7 @@ public class Schedule extends Activity {
 						sortedEmptyslots.add(emptyslots.get(j));
 				}
 			}
-			num = Math.min(sortedEmptyslots.size(), (int) Math.floor(duration/AveDuration));
+			num = Math.min(sortedEmptyslots.size(), (int) Math.ceil(duration/AveDuration));
 			PlanSchedule(sortedEmptyslots,num,AveDuration);
 		}
 		else

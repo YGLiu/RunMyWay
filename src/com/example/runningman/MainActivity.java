@@ -47,7 +47,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				 Intent myIntent = new Intent(getApplicationContext(), NotifyService.class);
-			        myIntent.putExtra("Message", "123456");
+			        myIntent.putExtra("Message", "Alarm Test");
 			        myIntent.setAction("com.example.runningman.NotifyAction");
 			        AlarmManager alarms ;
 			        PendingIntent alarmIntent = PendingIntent.getService(getApplicationContext(), 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
